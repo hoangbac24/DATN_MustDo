@@ -1,0 +1,2 @@
+-- TaskFlow Migration V12: Activity Log Table Structure Placeholder
+-- Target Module: Activity Audit Log

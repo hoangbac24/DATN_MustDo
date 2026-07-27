@@ -1,0 +1,2 @@
+-- TaskFlow Migration V2: Workspace Table Structure Placeholder
+-- Target Module: Workspace Management

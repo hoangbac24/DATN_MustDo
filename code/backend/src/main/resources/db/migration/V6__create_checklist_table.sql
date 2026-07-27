@@ -1,0 +1,2 @@
+-- TaskFlow Migration V6: Checklist Table Structure Placeholder
+-- Target Module: Subtask Checklists

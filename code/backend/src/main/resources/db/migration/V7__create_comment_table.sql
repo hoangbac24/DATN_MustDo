@@ -1,0 +1,2 @@
+-- TaskFlow Migration V7: Comment Table Structure Placeholder
+-- Target Module: Task Comments

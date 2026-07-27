@@ -1,0 +1,2 @@
+-- TaskFlow Migration V8: Attachment Table Structure Placeholder
+-- Target Module: File Attachments

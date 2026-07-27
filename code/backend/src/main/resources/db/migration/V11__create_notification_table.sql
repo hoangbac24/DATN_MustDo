@@ -1,0 +1,2 @@
+-- TaskFlow Migration V11: Notification Table Structure Placeholder
+-- Target Module: Notifications

@@ -1,0 +1,2 @@
+-- TaskFlow Migration V3: Project Table Structure Placeholder
+-- Target Module: Project Management
