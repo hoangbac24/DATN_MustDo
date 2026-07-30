@@ -15,23 +15,42 @@ import java.util.Date;
 @Component
 public class JwtProvider {
 
-    @Value("${jwt.secret}")
+    @Value("${jwt.secret:TaskFlowSecretKeyForJWTSigningMustBeAtLeast32BytesLong!}")
     private String jwtSecret;
 
-    @Value("${jwt.expiration}")
+    @Value("${jwt.expiration:900000}") // 15 mins default
     private long jwtExpirationInMs;
+
+    @Value("${jwt.refresh-expiration:604800000}") // 7 days default
+    private long jwtRefreshExpirationInMs;
 
     private SecretKey getSigningKey() {
         return Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
     }
 
     public String generateToken(Authentication authentication) {
-        String username = authentication.getName();
+        UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
+        return generateTokenFromEmail(userPrincipal.getUsername());
+    }
+
+    public String generateTokenFromEmail(String email) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + jwtExpirationInMs);
 
         return Jwts.builder()
-                .subject(username)
+                .subject(email)
+                .issuedAt(now)
+                .expiration(expiryDate)
+                .signWith(getSigningKey())
+                .compact();
+    }
+
+    public String generateRefreshTokenFromEmail(String email) {
+        Date now = new Date();
+        Date expiryDate = new Date(now.getTime() + jwtRefreshExpirationInMs);
+
+        return Jwts.builder()
+                .subject(email)
                 .issuedAt(now)
                 .expiration(expiryDate)
                 .signWith(getSigningKey())
@@ -55,5 +74,9 @@ public class JwtProvider {
         } catch (JwtException | IllegalArgumentException ex) {
             return false;
         }
+    }
+
+    public long getExpirationInMs() {
+        return jwtExpirationInMs / 1000;
     }
 }

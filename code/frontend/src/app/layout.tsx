@@ -3,6 +3,7 @@ import { Inter, Outfit } from 'next/font/google';
 import '@/styles/globals.css';
 import QueryProvider from '@/providers/QueryProvider';
 import ThemeProvider from '@/components/ThemeProvider';
+import { AuthProvider } from '@/providers/auth-provider';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 const outfit = Outfit({ subsets: ['latin'], variable: '--font-outfit' });
@@ -21,7 +22,9 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning className={`${inter.variable} ${outfit.variable}`}>
       <body className="bg-background text-foreground antialiased">
         <ThemeProvider>
-          <QueryProvider>{children}</QueryProvider>
+          <QueryProvider>
+            <AuthProvider>{children}</AuthProvider>
+          </QueryProvider>
         </ThemeProvider>
       </body>
     </html>
