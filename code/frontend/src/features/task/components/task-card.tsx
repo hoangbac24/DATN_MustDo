@@ -7,6 +7,9 @@ import { TaskStatusBadge } from './task-status-badge';
 import { TaskPriorityBadge } from './task-priority-badge';
 import { useUpdateTaskStatus } from '../hooks/use-task';
 
+import { useTaskTags } from '@/features/tag/hooks/use-tag';
+import { TagBadge } from '@/features/tag/components/tag-badge';
+
 interface TaskCardProps {
   task: TaskDto;
   onSelect: (task: TaskDto) => void;
@@ -14,6 +17,7 @@ interface TaskCardProps {
 
 export function TaskCard({ task, onSelect }: TaskCardProps) {
   const updateStatus = useUpdateTaskStatus();
+  const { data: tags = [] } = useTaskTags(task.id);
   const isCompleted = task.status === 'COMPLETED';
 
   const handleToggleComplete = (e: React.MouseEvent) => {
@@ -64,6 +68,14 @@ export function TaskCard({ task, onSelect }: TaskCardProps) {
 
           <TaskPriorityBadge priority={task.priority} />
         </div>
+
+        {tags.length > 0 && (
+          <div className="mt-2.5 flex flex-wrap gap-1">
+            {tags.map((t) => (
+              <TagBadge key={t.id} tag={t} size="sm" />
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="mt-4 flex items-center justify-between border-t border-white/5 pt-3 text-xs text-gray-400">

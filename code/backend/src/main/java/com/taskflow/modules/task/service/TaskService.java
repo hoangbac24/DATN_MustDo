@@ -90,4 +90,14 @@ public interface TaskService {
      * @return updated TaskDto instance
      */
     TaskDto toggleArchiveTask(UUID userId, UUID taskId);
+
+    /**
+     * Gets tasks with due dates in the specified date range.
+     *
+     * @param userId UUID identifier of requesting user
+     * @param start  range start instant
+     * @param end    range end instant
+     * @return list of TaskDto instances
+     */
+    List<TaskDto> getTasksWithDueDateInRange(UUID userId, java.time.Instant start, java.time.Instant end);
 }

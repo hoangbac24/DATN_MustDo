@@ -49,7 +49,12 @@ export default function RegisterPage() {
           router.push('/');
         },
         onError: (error: any) => {
-          const msg = error.response?.data?.message || 'Registration failed. Please try again.';
+          let msg = error.response?.data?.message;
+          if (error.response?.data?.data && typeof error.response.data.data === 'object') {
+            const fieldErrors = Object.values(error.response.data.data).join(', ');
+            if (fieldErrors) msg = fieldErrors;
+          }
+          if (!msg) msg = error.message || 'Registration failed. Please try again.';
           setErrorMessage(msg);
         },
       }

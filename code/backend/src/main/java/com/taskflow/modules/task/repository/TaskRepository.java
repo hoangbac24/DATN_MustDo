@@ -32,4 +32,21 @@ public interface TaskRepository extends JpaRepository<TaskEntity, UUID> {
 
     @Query("SELECT COALESCE(MAX(t.position), 0.0) FROM TaskEntity t WHERE t.projectId = :projectId")
     Double findMaxPositionByProjectId(@Param("projectId") UUID projectId);
+
+    @Query("SELECT t FROM TaskEntity t WHERE t.isDeleted = false " +
+           "AND (:projectId IS NULL OR t.projectId = :projectId) " +
+           "AND (:status IS NULL OR t.status = :status) " +
+           "AND (:priority IS NULL OR t.priority = :priority) " +
+           "AND (:search IS NULL OR LOWER(t.title) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(t.description) LIKE LOWER(CONCAT('%', :search, '%'))) " +
+           "ORDER BY t.createdAt DESC")
+    List<TaskEntity> globalSearchTasks(
+            @Param("projectId") UUID projectId,
+            @Param("status") String status,
+            @Param("priority") String priority,
+            @Param("search") String search);
+
+    @Query("SELECT t FROM TaskEntity t WHERE t.isDeleted = false AND t.dueDate IS NOT NULL AND t.dueDate >= :start AND t.dueDate <= :end")
+    List<TaskEntity> findTasksWithDueDateInRange(@Param("start") java.time.Instant start, @Param("end") java.time.Instant end);
+
+    List<TaskEntity> findAllByIsDeletedFalse();
 }

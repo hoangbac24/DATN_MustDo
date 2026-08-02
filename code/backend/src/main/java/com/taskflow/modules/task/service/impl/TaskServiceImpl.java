@@ -163,6 +163,16 @@ public class TaskServiceImpl implements TaskService {
         return taskMapper.toDto(updated, assignee);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public List<TaskDto> getTasksWithDueDateInRange(UUID userId, Instant start, Instant end) {
+        List<TaskEntity> tasks = taskRepository.findTasksWithDueDateInRange(start, end);
+        return tasks.stream().map(task -> {
+            UserDto assignee = resolveAssignee(task.getAssigneeId());
+            return taskMapper.toDto(task, assignee);
+        }).collect(Collectors.toList());
+    }
+
     private TaskEntity findActiveTaskById(UUID taskId) {
         return taskRepository.findByIdAndIsDeletedFalse(taskId)
                 .orElseThrow(() -> new AppException(ResultCode.NOT_FOUND, "Task not found"));

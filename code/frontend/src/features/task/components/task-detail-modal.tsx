@@ -7,6 +7,13 @@ import { TaskStatusBadge } from './task-status-badge';
 import { TaskPriorityBadge } from './task-priority-badge';
 import { useDeleteTask, useToggleArchiveTask, useUpdateTaskStatus } from '../hooks/use-task';
 
+import { AttachmentList } from '@/features/attachment/components/attachment-list';
+import { ChecklistComponent } from '@/features/checklist/components/checklist-component';
+import { CommentList } from '@/features/comment/components/comment-list';
+import { ReminderList } from '@/features/reminder/components/reminder-list';
+import { TagSelector } from '@/features/tag/components/tag-selector';
+import { useWorkspaceStore } from '@/store/workspace-store';
+
 interface TaskDetailModalProps {
   task: TaskDto | null;
   isOpen: boolean;
@@ -18,6 +25,7 @@ export function TaskDetailModal({ task, isOpen, onClose, onEdit }: TaskDetailMod
   const updateStatus = useUpdateTaskStatus();
   const toggleArchive = useToggleArchiveTask();
   const deleteTask = useDeleteTask();
+  const activeWorkspaceId = useWorkspaceStore((state) => state.activeWorkspaceId);
 
   if (!isOpen || !task) return null;
 
@@ -35,7 +43,7 @@ export function TaskDetailModal({ task, isOpen, onClose, onEdit }: TaskDetailMod
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-md">
-      <div className="w-full max-w-xl rounded-2xl border border-white/10 bg-[#111827] p-6 shadow-2xl space-y-6">
+      <div className="w-full max-w-xl rounded-2xl border border-white/10 bg-[#111827] p-6 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto">
         {/* Modal Header */}
         <div className="flex items-start justify-between border-b border-white/10 pb-4">
           <div className="flex items-start space-x-3">
@@ -89,6 +97,23 @@ export function TaskDetailModal({ task, isOpen, onClose, onEdit }: TaskDetailMod
               </p>
             </div>
           </div>
+
+          {/* Tags Selector */}
+          {activeWorkspaceId && (
+            <TagSelector taskId={task.id} workspaceId={activeWorkspaceId} />
+          )}
+
+          {/* Scheduled Reminders */}
+          <ReminderList taskId={task.id} />
+
+          {/* File Attachments */}
+          <AttachmentList taskId={task.id} />
+
+          {/* Checklist Component */}
+          <ChecklistComponent taskId={task.id} />
+
+          {/* Comments Discussion Thread */}
+          <CommentList taskId={task.id} />
 
           {/* Quick Status Update Buttons */}
           <div>
