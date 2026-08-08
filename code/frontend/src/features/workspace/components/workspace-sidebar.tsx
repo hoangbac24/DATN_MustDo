@@ -12,6 +12,7 @@ import {
   Palette,
   Calendar,
   Sparkles,
+  ShieldAlert,
 } from 'lucide-react';
 import { useAuthStore } from '@/store/auth-store';
 import { useWorkspaceStore } from '@/store/workspace-store';
@@ -25,11 +26,14 @@ export function WorkspaceSidebar() {
   const activeWorkspace = useWorkspaceStore((state) => state.activeWorkspace);
   const logoutMutation = useLogout();
 
+  const isAdminUser = user?.roles?.includes('ROLE_ADMIN') || user?.email === 'admin@gmail.com';
+
   const isDashboardActive = pathname === '/' || pathname === '/dashboard';
   const isCalendarActive = pathname === '/calendar';
   const isWikiActive = pathname.includes('/wiki');
   const isWhiteboardActive = pathname.includes('/whiteboards');
   const isSettingsActive = pathname.startsWith('/settings');
+  const isAdminActive = pathname.startsWith('/admin');
 
   return (
     <aside className="hidden md:flex h-screen w-[260px] flex-col border-r border-surface-border bg-surface-sidebar p-4 text-text-secondary transition-colors">
@@ -45,7 +49,22 @@ export function WorkspaceSidebar() {
 
       {/* Main Navigation Items */}
       <nav className="space-y-1.5">
-        {/* 1. Tổng quan (Dashboard) at the top */}
+        {/* 1. Admin Portal Link for System Administrators */}
+        {isAdminUser && (
+          <Link
+            href="/admin"
+            className={`flex h-10 items-center space-x-3 rounded-xl border px-3.5 text-xs font-bold transition shadow-xs ${
+              isAdminActive
+                ? 'border-red-500/40 bg-red-500/10 text-red-500'
+                : 'border-red-500/20 bg-red-500/5 text-red-400 hover:bg-red-500/10'
+            }`}
+          >
+            <ShieldAlert className="h-4 w-4 shrink-0 text-red-500" />
+            <span className="truncate">Quản trị hệ thống</span>
+          </Link>
+        )}
+
+        {/* 2. Tổng quan (Dashboard) at the top */}
         <Link
           href="/"
           className={`flex h-10 items-center space-x-3 rounded-lg px-3.5 text-xs font-medium transition ${
@@ -58,12 +77,12 @@ export function WorkspaceSidebar() {
           <span>{tNav('menu.dashboard', { defaultValue: 'Tổng quan' })}</span>
         </Link>
 
-        {/* 2. Workspace Dropdown switcher right below Dashboard */}
+        {/* 3. Workspace Dropdown switcher right below Dashboard */}
         <div className="pt-0.5 pb-1">
           <WorkspaceSwitcher />
         </div>
 
-        {/* 3. Other navigation items */}
+        {/* 4. Other navigation items */}
         <Link
           href="/calendar"
           className={`flex h-10 items-center space-x-3 rounded-lg px-3.5 text-xs font-medium transition ${
