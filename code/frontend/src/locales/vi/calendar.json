@@ -1,0 +1,10 @@
+{
+  "title": "Lịch công việc",
+  "subtitle": "Lịch theo dõi sự kiện và hạn chót công việc",
+  "today": "Hôm nay",
+  "views": {
+    "month": "Tháng",
+    "week": "Tuần",
+    "day": "Ngày"
+  }
+}

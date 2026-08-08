@@ -9,6 +9,7 @@ export interface User {
   isEmailVerified: boolean;
   status: string;
   roles: string[];
+  permissions?: string[];
 }
 
 interface AuthState {

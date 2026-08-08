@@ -24,6 +24,9 @@ public class TaskEntity extends BaseEntity {
     @Column(name = "priority", nullable = false, length = 50)
     private String priority = "MEDIUM";
 
+    @Column(name = "start_date")
+    private Instant startDate;
+
     @Column(name = "due_date")
     private Instant dueDate;
 
@@ -32,6 +35,9 @@ public class TaskEntity extends BaseEntity {
 
     @Column(name = "assignee_id")
     private UUID assigneeId;
+
+    @Column(name = "column_id")
+    private UUID columnId;
 
     @Column(name = "position", nullable = false)
     private Double position = 1000.0;
@@ -91,6 +97,14 @@ public class TaskEntity extends BaseEntity {
         this.priority = priority;
     }
 
+    public Instant getStartDate() {
+        return startDate;
+    }
+
+    public void setStartDate(Instant startDate) {
+        this.startDate = startDate;
+    }
+
     public Instant getDueDate() {
         return dueDate;
     }
@@ -113,6 +127,14 @@ public class TaskEntity extends BaseEntity {
 
     public void setAssigneeId(UUID assigneeId) {
         this.assigneeId = assigneeId;
+    }
+
+    public UUID getColumnId() {
+        return columnId;
+    }
+
+    public void setColumnId(UUID columnId) {
+        this.columnId = columnId;
     }
 
     public Double getPosition() {

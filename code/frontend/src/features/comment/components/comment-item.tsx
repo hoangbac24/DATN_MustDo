@@ -12,6 +12,21 @@ interface CommentItemProps {
   onDelete: (id: string) => void;
 }
 
+function renderContentWithMentions(content: string) {
+  if (!content) return '';
+  const parts = content.split(/(@[^\s]+)/g);
+  return parts.map((part, idx) => {
+    if (part.startsWith('@')) {
+      return (
+        <span key={idx} className="rounded bg-indigo-500/20 px-1 py-0.5 font-semibold text-indigo-400 border border-indigo-500/30">
+          {part}
+        </span>
+      );
+    }
+    return part;
+  });
+}
+
 export function CommentItem({ comment, onUpdate, onDelete }: CommentItemProps) {
   const [isEditing, setIsEditing] = useState(false);
   const currentUser = useAuthStore((state) => state.user);
@@ -84,7 +99,9 @@ export function CommentItem({ comment, onUpdate, onDelete }: CommentItemProps) {
             submitLabel="Save"
           />
         ) : (
-          <p className="text-gray-200 whitespace-pre-wrap leading-relaxed">{comment.content}</p>
+          <p className="text-gray-200 whitespace-pre-wrap leading-relaxed">
+            {renderContentWithMentions(comment.content)}
+          </p>
         )}
       </div>
     </div>

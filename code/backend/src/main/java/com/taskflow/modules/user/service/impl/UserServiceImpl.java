@@ -14,6 +14,8 @@ import com.taskflow.modules.user.mapper.UserSettingsMapper;
 import com.taskflow.modules.user.repository.UserRepository;
 import com.taskflow.modules.user.repository.UserSettingsRepository;
 import com.taskflow.modules.user.service.UserService;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -47,6 +49,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "users", key = "#userId")
     public UserDto getCurrentUserProfile(UUID userId) {
         UserEntity user = findEntityById(userId);
         return userMapper.toDto(user);
@@ -54,6 +57,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
+    @CacheEvict(value = "users", key = "#userId")
     public UserDto updateProfile(UUID userId, UpdateProfileRequest request) {
         UserEntity user = findEntityById(userId);
         user.setFullName(request.getFullName());

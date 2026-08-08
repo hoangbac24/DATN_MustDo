@@ -5,7 +5,9 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/auth-store';
 import { useCurrentUser } from '@/features/auth/hooks/use-auth';
 
-const PUBLIC_ROUTES = ['/login', '/register', '/forgot-password'];
+import { useWorkspaces } from '@/features/workspace/hooks/use-workspace';
+
+const PUBLIC_ROUTES = ['/login', '/register', '/forgot-password', '/onboarding'];
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -15,6 +17,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Sync user profile if token exists
   useCurrentUser();
+
+  // Query user workspaces to check if onboarding is needed
+  const { data: workspaces, isSuccess: isWorkspacesLoaded } = useWorkspaces();
 
   useEffect(() => {
     setIsInitialized(true);
@@ -27,10 +32,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     if (!isAuthenticated && !isPublicRoute) {
       router.push('/login');
-    } else if (isAuthenticated && isPublicRoute) {
-      router.push('/');
+      return;
     }
-  }, [isAuthenticated, isInitialized, pathname, router]);
+
+    if (isAuthenticated && (pathname === '/login' || pathname === '/register')) {
+      router.push('/');
+      return;
+    }
+
+    if (isAuthenticated && isWorkspacesLoaded) {
+      const hasWorkspaces = (workspaces?.length || 0) > 0;
+      if (!hasWorkspaces && pathname !== '/onboarding') {
+        router.push('/onboarding' as any);
+      } else if (hasWorkspaces && pathname === '/onboarding') {
+        router.push('/');
+      }
+    }
+  }, [isAuthenticated, isInitialized, isWorkspacesLoaded, pathname, router, workspaces]);
 
   if (!isInitialized) {
     return (

@@ -1,10 +1,13 @@
 package com.taskflow.modules.project.controller;
 
 import com.taskflow.common.ApiResponse;
+import com.taskflow.modules.project.dto.AddProjectMemberRequest;
 import com.taskflow.modules.project.dto.CreateProjectRequest;
 import com.taskflow.modules.project.dto.ProjectDto;
+import com.taskflow.modules.project.dto.ProjectMemberDto;
 import com.taskflow.modules.project.dto.ProjectStatsDto;
 import com.taskflow.modules.project.dto.UpdateProjectRequest;
+import com.taskflow.modules.workspace.dto.UpdateMemberRoleRequest;
 import com.taskflow.modules.project.service.ProjectService;
 import com.taskflow.security.UserPrincipal;
 import io.swagger.v3.oas.annotations.Operation;
@@ -112,5 +115,46 @@ public class ProjectController {
             @PathVariable UUID projectId) {
         ProjectStatsDto stats = projectService.getProjectStats(principal.getId(), projectId);
         return ResponseEntity.ok(ApiResponse.success("Project statistics retrieved successfully", stats));
+    }
+
+    @GetMapping("/api/v1/projects/{projectId}/members")
+    @Operation(summary = "Get project members")
+    public ResponseEntity<ApiResponse<List<ProjectMemberDto>>> getProjectMembers(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @PathVariable UUID projectId) {
+        List<ProjectMemberDto> members = projectService.getProjectMembers(principal.getId(), projectId);
+        return ResponseEntity.ok(ApiResponse.success("Project members retrieved successfully", members));
+    }
+
+    @PostMapping("/api/v1/projects/{projectId}/members")
+    @Operation(summary = "Add a member to a project")
+    public ResponseEntity<ApiResponse<ProjectMemberDto>> addProjectMember(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @PathVariable UUID projectId,
+            @Valid @RequestBody AddProjectMemberRequest request) {
+        ProjectMemberDto member = projectService.addProjectMember(principal.getId(), projectId, request);
+        return ResponseEntity.status(org.springframework.http.HttpStatus.CREATED)
+                .body(ApiResponse.success("Project member added successfully", member));
+    }
+
+    @PatchMapping("/api/v1/projects/{projectId}/members/{memberId}/role")
+    @Operation(summary = "Update project member role")
+    public ResponseEntity<ApiResponse<ProjectMemberDto>> updateProjectMemberRole(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @PathVariable UUID projectId,
+            @PathVariable UUID memberId,
+            @Valid @RequestBody UpdateMemberRoleRequest request) {
+        ProjectMemberDto member = projectService.updateProjectMemberRole(principal.getId(), projectId, memberId, request);
+        return ResponseEntity.ok(ApiResponse.success("Project member role updated successfully", member));
+    }
+
+    @DeleteMapping("/api/v1/projects/{projectId}/members/{memberId}")
+    @Operation(summary = "Remove a member from a project")
+    public ResponseEntity<ApiResponse<Void>> removeProjectMember(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @PathVariable UUID projectId,
+            @PathVariable UUID memberId) {
+        projectService.removeProjectMember(principal.getId(), projectId, memberId);
+        return ResponseEntity.ok(ApiResponse.success("Project member removed successfully", null));
     }
 }

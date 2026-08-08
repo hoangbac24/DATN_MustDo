@@ -4,40 +4,42 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { User, Sliders, Shield, Bell } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 export default function SettingsLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const { t } = useTranslation('settings');
 
   const settingsTabs = [
-    { name: 'Profile & Account', href: '/settings', icon: User },
-    { name: 'Preferences', href: '/settings/preferences', icon: Sliders },
-    { name: 'Security', href: '/settings/security', icon: Shield },
-    { name: 'Notifications', href: '/settings/notifications', icon: Bell },
+    { name: t('tabs.profile'), href: '/settings', icon: User },
+    { name: t('tabs.preferences'), href: '/settings/preferences', icon: Sliders },
+    { name: t('tabs.security'), href: '/settings/security', icon: Shield },
+    { name: t('tabs.notifications'), href: '/settings/notifications', icon: Bell },
   ];
 
   return (
-    <div className="mx-auto max-w-5xl space-y-8">
-      <div>
-        <h1 className="text-3xl font-extrabold tracking-tight text-white font-heading">
-          Settings & Preferences
+    <div className="mx-auto max-w-5xl space-y-6">
+      <div className="border-b border-surface-border pb-4">
+        <h1 className="text-xl font-bold tracking-tight text-text-primary font-heading">
+          {t('title')}
         </h1>
-        <p className="text-xs text-gray-400">Manage your profile, workspace preferences, theme, and security settings</p>
+        <p className="text-xs text-text-secondary mt-1">{t('subtitle')}</p>
       </div>
 
       {/* Settings Navigation Bar */}
-      <div className="flex border-b border-white/10 overflow-x-auto space-x-1">
+      <div className="flex border-b border-surface-border overflow-x-auto space-x-1">
         {settingsTabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = pathname === tab.href;
 
           return (
             <Link
-              key={tab.name}
+              key={tab.href}
               href={tab.href as any}
-              className={`flex items-center space-x-2 border-b-2 px-4 py-3 text-xs font-semibold transition ${
+              className={`flex items-center space-x-2 border-b-2 px-4 py-2.5 text-xs font-semibold transition ${
                 isActive
-                  ? 'border-indigo-500 text-indigo-400 bg-indigo-500/10 rounded-t-xl'
-                  : 'border-transparent text-gray-400 hover:border-white/20 hover:text-white'
+                  ? 'border-primary text-primary bg-menu-active rounded-t-xl font-bold shadow-xs'
+                  : 'border-transparent text-text-secondary hover:border-surface-border hover:text-text-primary'
               }`}
             >
               <Icon className="h-4 w-4" />

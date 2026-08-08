@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import type { SearchEntityType } from '../types';
 
 interface FilterPanelProps {
@@ -23,16 +24,18 @@ export function FilterPanel({
   onSelectSortBy,
   counts,
 }: FilterPanelProps) {
+  const { t } = useTranslation('search');
+
   const tabs: { label: string; value: SearchEntityType; count?: number }[] = [
-    { label: 'All', value: 'ALL' },
-    { label: 'Tasks', value: 'TASK', count: counts?.tasks },
-    { label: 'Projects', value: 'PROJECT', count: counts?.projects },
-    { label: 'Tags', value: 'TAG', count: counts?.tags },
-    { label: 'Comments', value: 'COMMENT', count: counts?.comments },
+    { label: t('tabAll'), value: 'ALL' },
+    { label: t('tabTasks'), value: 'TASK', count: counts?.tasks },
+    { label: t('tabProjects'), value: 'PROJECT', count: counts?.projects },
+    { label: t('tabTags'), value: 'TAG', count: counts?.tags },
+    { label: t('tabComments'), value: 'COMMENT', count: counts?.comments },
   ];
 
   return (
-    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-b border-white/10 pb-3">
+    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-b border-surface-border pb-3">
       {/* Category Tabs */}
       <div className="flex flex-wrap items-center gap-1">
         {tabs.map((tab) => (
@@ -42,13 +45,13 @@ export function FilterPanel({
             onClick={() => onSelectType(tab.value)}
             className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
               selectedType === tab.value
-                ? 'bg-indigo-600 text-white'
-                : 'text-gray-400 hover:bg-white/5 hover:text-white'
+                ? 'bg-menu-active text-menu-activeText font-bold shadow-xs'
+                : 'text-text-secondary hover:bg-surface-alt hover:text-text-primary'
             }`}
           >
             {tab.label}
             {tab.count !== undefined && tab.count > 0 && (
-              <span className="ml-1.5 rounded-full bg-white/20 px-1.5 py-0.2 text-[10px]">
+              <span className="ml-1.5 rounded-full bg-primary/10 px-1.5 py-0.2 text-[10px] text-primary">
                 {tab.count}
               </span>
             )}
@@ -58,15 +61,15 @@ export function FilterPanel({
 
       {/* Sorting Selector */}
       <div className="flex items-center space-x-2 text-xs">
-        <span className="text-gray-400">Sort by:</span>
+        <span className="text-text-secondary">{t('sortBy')}</span>
         <select
           value={sortBy}
           onChange={(e) => onSelectSortBy(e.target.value as any)}
-          className="rounded-lg border border-white/10 bg-gray-900 px-2 py-1 text-xs text-gray-200 outline-none focus:border-indigo-500"
+          className="rounded-lg border border-surface-border bg-surface-alt px-2.5 py-1 text-xs text-text-primary outline-none focus:border-primary"
         >
-          <option value="relevance">Relevance</option>
-          <option value="date">Date</option>
-          <option value="title">Title</option>
+          <option value="relevance" className="bg-surface text-text-primary">{t('sortRelevance')}</option>
+          <option value="date" className="bg-surface text-text-primary">{t('sortDate')}</option>
+          <option value="title" className="bg-surface text-text-primary">{t('sortTitle')}</option>
         </select>
       </div>
     </div>

@@ -27,12 +27,12 @@ public interface ActivityLogService {
     PageResponse<ActivityLogDto> getUserActivities(UUID userId, String entityType, Pageable pageable);
 
     /**
-     * Gets paginated activity feed for a project.
+     * Gets paginated activity feed for a project with optional entityType filter.
      */
-    PageResponse<ActivityLogDto> getProjectActivities(UUID userId, UUID projectId, Pageable pageable);
+    PageResponse<ActivityLogDto> getProjectActivities(UUID userId, UUID projectId, String entityType, Pageable pageable);
 
     /**
-     * Gets paginated activity feed for a workspace.
+     * Gets paginated activity feed for a workspace with optional entityType filter.
      */
-    PageResponse<ActivityLogDto> getWorkspaceActivities(UUID userId, UUID workspaceId, Pageable pageable);
+    PageResponse<ActivityLogDto> getWorkspaceActivities(UUID userId, UUID workspaceId, String entityType, Pageable pageable);
 }

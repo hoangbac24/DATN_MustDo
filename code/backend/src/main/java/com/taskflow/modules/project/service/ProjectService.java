@@ -14,6 +14,11 @@ import java.util.UUID;
 public interface ProjectService {
 
     /**
+     * Retrieves or auto-creates a default project for a workspace.
+     */
+    ProjectDto getOrCreateDefaultProject(UUID userId, UUID workspaceId);
+
+    /**
      * Creates a new project within an authorized workspace.
      *
      * @param userId      UUID identifier of the user creating the project
@@ -87,4 +92,24 @@ public interface ProjectService {
      * @return ProjectStatsDto instance containing task metrics
      */
     ProjectStatsDto getProjectStats(UUID userId, UUID projectId);
+
+    /**
+     * Gets active members assigned to a project.
+     */
+    List<com.taskflow.modules.project.dto.ProjectMemberDto> getProjectMembers(UUID userId, UUID projectId);
+
+    /**
+     * Adds a user as a member of a project.
+     */
+    com.taskflow.modules.project.dto.ProjectMemberDto addProjectMember(UUID userId, UUID projectId, com.taskflow.modules.project.dto.AddProjectMemberRequest request);
+
+    /**
+     * Updates a project member's role.
+     */
+    com.taskflow.modules.project.dto.ProjectMemberDto updateProjectMemberRole(UUID userId, UUID projectId, UUID memberId, com.taskflow.modules.workspace.dto.UpdateMemberRoleRequest request);
+
+    /**
+     * Removes a member from a project.
+     */
+    void removeProjectMember(UUID userId, UUID projectId, UUID memberId);
 }

@@ -1,6 +1,7 @@
 package com.taskflow.modules.task.controller;
 
 import com.taskflow.common.ApiResponse;
+import com.taskflow.modules.task.dto.AssignTaskRequest;
 import com.taskflow.modules.task.dto.CreateTaskRequest;
 import com.taskflow.modules.task.dto.ReorderTaskRequest;
 import com.taskflow.modules.task.dto.TaskDto;
@@ -28,13 +29,38 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@Tag(name = "Task Management", description = "Endpoints for managing project tasks")
+@Tag(name = "Task Management", description = "Endpoints for managing workspace and project tasks")
 public class TaskController {
 
     private final TaskService taskService;
 
     public TaskController(TaskService taskService) {
         this.taskService = taskService;
+    }
+
+    @PostMapping("/api/v1/workspaces/{workspaceId}/tasks")
+    @Operation(summary = "Create a new task directly under a workspace")
+    public ResponseEntity<ApiResponse<TaskDto>> createWorkspaceTask(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @PathVariable UUID workspaceId,
+            @Valid @RequestBody CreateTaskRequest request) {
+        TaskDto task = taskService.createWorkspaceTask(principal.getId(), workspaceId, request);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success("Task created successfully in workspace", task));
+    }
+
+    @GetMapping("/api/v1/workspaces/{workspaceId}/tasks")
+    @Operation(summary = "List all tasks for a workspace with optional filters")
+    public ResponseEntity<ApiResponse<List<TaskDto>>> getWorkspaceTasks(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @PathVariable UUID workspaceId,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String priority,
+            @RequestParam(required = false) UUID assigneeId,
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) Boolean archived) {
+        List<TaskDto> tasks = taskService.getWorkspaceTasks(principal.getId(), workspaceId, status, priority, assigneeId, search, archived);
+        return ResponseEntity.ok(ApiResponse.success("Workspace tasks retrieved successfully", tasks));
     }
 
     @PostMapping("/api/v1/projects/{projectId}/tasks")
@@ -55,9 +81,10 @@ public class TaskController {
             @PathVariable UUID projectId,
             @RequestParam(required = false) String status,
             @RequestParam(required = false) String priority,
+            @RequestParam(required = false) UUID assigneeId,
             @RequestParam(required = false) String search,
             @RequestParam(required = false) Boolean archived) {
-        List<TaskDto> tasks = taskService.getProjectTasks(principal.getId(), projectId, status, priority, search, archived);
+        List<TaskDto> tasks = taskService.getProjectTasks(principal.getId(), projectId, status, priority, assigneeId, search, archived);
         return ResponseEntity.ok(ApiResponse.success("Project tasks retrieved successfully", tasks));
     }
 
@@ -97,6 +124,16 @@ public class TaskController {
             @Valid @RequestBody UpdateTaskStatusRequest request) {
         TaskDto updated = taskService.updateTaskStatus(principal.getId(), taskId, request.getStatus());
         return ResponseEntity.ok(ApiResponse.success("Task status updated successfully", updated));
+    }
+
+    @PatchMapping("/api/v1/tasks/{taskId}/assign")
+    @Operation(summary = "Assign or unassign task to a user")
+    public ResponseEntity<ApiResponse<TaskDto>> assignTask(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @PathVariable UUID taskId,
+            @RequestBody AssignTaskRequest request) {
+        TaskDto updated = taskService.assignTask(principal.getId(), taskId, request.getAssigneeId());
+        return ResponseEntity.ok(ApiResponse.success("Task assignment updated successfully", updated));
     }
 
     @PatchMapping("/api/v1/tasks/{taskId}/archive")

@@ -1,0 +1,10 @@
+{
+  "title": "Task Calendar",
+  "subtitle": "Schedule and track deadlines visually",
+  "today": "Today",
+  "views": {
+    "month": "Month",
+    "week": "Week",
+    "day": "Day"
+  }
+}

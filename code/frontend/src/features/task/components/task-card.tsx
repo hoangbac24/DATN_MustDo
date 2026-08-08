@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Calendar, CheckCircle2, Circle, MoreVertical, Archive } from 'lucide-react';
+import { Calendar, CheckCircle2, Circle, Archive } from 'lucide-react';
 import type { TaskDto } from '../types';
 import { TaskStatusBadge } from './task-status-badge';
 import { TaskPriorityBadge } from './task-priority-badge';
@@ -29,10 +29,10 @@ export function TaskCard({ task, onSelect }: TaskCardProps) {
   return (
     <div
       onClick={() => onSelect(task)}
-      className={`group relative flex flex-col justify-between rounded-2xl border p-4 backdrop-blur-md transition cursor-pointer ${
+      className={`group relative flex flex-col justify-between rounded-xl border p-4 transition-all duration-200 cursor-pointer shadow-xs ${
         isCompleted
-          ? 'border-white/5 bg-[#111827]/40 opacity-75'
-          : 'border-white/10 bg-[#111827]/80 hover:border-white/20 hover:shadow-lg'
+          ? 'border-surface-border bg-surface-alt/50 opacity-75'
+          : 'border-surface-border bg-surface hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md'
       }`}
     >
       <div>
@@ -40,10 +40,11 @@ export function TaskCard({ task, onSelect }: TaskCardProps) {
           <div className="flex items-start space-x-3 truncate">
             <button
               onClick={handleToggleComplete}
-              className="mt-0.5 text-gray-400 hover:text-emerald-400 transition shrink-0"
+              aria-label={isCompleted ? 'Mark as incomplete' : 'Mark as complete'}
+              className="mt-0.5 text-text-muted hover:text-status-success transition shrink-0"
             >
               {isCompleted ? (
-                <CheckCircle2 className="h-5 w-5 text-emerald-400" />
+                <CheckCircle2 className="h-5 w-5 text-status-success" />
               ) : (
                 <Circle className="h-5 w-5" />
               )}
@@ -52,14 +53,14 @@ export function TaskCard({ task, onSelect }: TaskCardProps) {
             <div className="truncate">
               <h4
                 className={`text-sm font-semibold transition ${
-                  isCompleted ? 'line-through text-gray-400' : 'text-white group-hover:text-indigo-400'
+                  isCompleted ? 'line-through text-text-muted' : 'text-text-primary group-hover:text-primary'
                 }`}
               >
                 {task.title}
               </h4>
 
               {task.description && (
-                <p className="mt-1 line-clamp-2 text-xs text-gray-400">
+                <p className="mt-1 line-clamp-2 text-xs text-text-secondary">
                   {task.description}
                 </p>
               )}
@@ -78,19 +79,19 @@ export function TaskCard({ task, onSelect }: TaskCardProps) {
         )}
       </div>
 
-      <div className="mt-4 flex items-center justify-between border-t border-white/5 pt-3 text-xs text-gray-400">
+      <div className="mt-4 flex items-center justify-between border-t border-surface-border pt-3 text-xs text-text-secondary">
         <div className="flex items-center space-x-3">
           <TaskStatusBadge status={task.status} />
 
           {task.dueDate && (
-            <div className="flex items-center space-x-1 text-[11px] text-gray-400">
-              <Calendar className="h-3.5 w-3.5 text-gray-500" />
+            <div className="flex items-center space-x-1 text-[11px] text-text-muted">
+              <Calendar className="h-3.5 w-3.5 text-text-muted" />
               <span>{new Date(task.dueDate).toLocaleDateString()}</span>
             </div>
           )}
 
           {task.isArchived && (
-            <span className="flex items-center text-[10px] text-amber-400">
+            <span className="flex items-center text-[10px] text-status-warning">
               <Archive className="mr-1 h-3 w-3" /> Archived
             </span>
           )}
@@ -98,7 +99,7 @@ export function TaskCard({ task, onSelect }: TaskCardProps) {
 
         {task.assignee && (
           <div
-            className="flex h-6 w-6 items-center justify-center rounded-full bg-indigo-600 text-[10px] font-bold text-white shadow-sm"
+            className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-white shadow-xs"
             title={task.assignee.fullName}
           >
             {task.assignee.fullName?.substring(0, 1).toUpperCase()}

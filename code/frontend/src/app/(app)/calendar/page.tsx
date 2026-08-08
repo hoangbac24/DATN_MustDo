@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Plus } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useCalendarEvents } from '@/features/calendar/hooks/use-calendar';
 import type { CalendarEventItemDto, CalendarViewMode } from '@/features/calendar/types';
 import { MonthView } from '@/features/calendar/components/month-view';
@@ -10,6 +11,7 @@ import { DayView } from '@/features/calendar/components/day-view';
 import { EventModal } from '@/features/calendar/components/event-modal';
 
 export default function CalendarPage() {
+  const { t: tNav } = useTranslation('navigation');
   const [currentDate, setCurrentDate] = useState(new Date());
   const [viewMode, setViewMode] = useState<CalendarViewMode>('month');
   const [selectedEvent, setSelectedEvent] = useState<CalendarEventItemDto | null>(null);
@@ -21,6 +23,17 @@ export default function CalendarPage() {
   const rangeEnd = new Date(currentDate.getFullYear(), currentDate.getMonth() + 2, 0).toISOString();
 
   const { data: events = [], isLoading } = useCalendarEvents(rangeStart, rangeEnd);
+
+  React.useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 768) {
+        setViewMode('day');
+      }
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const handlePrev = () => {
     const next = new Date(currentDate);
@@ -59,58 +72,60 @@ export default function CalendarPage() {
   });
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6 p-6">
+    <div className="space-y-6">
       {/* Top Bar Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-white/10 pb-4">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-surface-border pb-4">
         <div className="flex items-center space-x-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-600/20 text-indigo-400">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
             <CalendarIcon className="h-5 w-5" />
           </div>
           <div>
-            <h1 className="text-xl font-bold text-white font-heading">Calendar</h1>
-            <p className="text-xs text-gray-400">Schedule custom events and track task due dates</p>
+            <h1 className="text-xl font-bold text-text-primary font-heading">
+              {tNav('menu.calendar', { defaultValue: 'Lịch công việc' })}
+            </h1>
+            <p className="text-xs text-text-secondary">Theo dõi sự kiện và thời hạn công việc trực quan</p>
           </div>
         </div>
 
         {/* View Switcher & Action Controls */}
         <div className="flex items-center space-x-3">
-          <div className="flex items-center space-x-1 rounded-xl border border-white/10 bg-gray-950/60 p-1">
+          <div className="flex items-center space-x-1 rounded-xl border border-surface-border bg-surface-alt p-1">
             <button
               type="button"
               onClick={() => setViewMode('month')}
-              className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
-                viewMode === 'month' ? 'bg-indigo-600 text-white' : 'text-gray-400 hover:text-white'
+              className={`hidden md:inline-block rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
+                viewMode === 'month' ? 'bg-primary text-white shadow-xs' : 'text-text-secondary hover:text-text-primary'
               }`}
             >
-              Month
+              Tháng
             </button>
             <button
               type="button"
               onClick={() => setViewMode('week')}
-              className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
-                viewMode === 'week' ? 'bg-indigo-600 text-white' : 'text-gray-400 hover:text-white'
+              className={`hidden md:inline-block rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
+                viewMode === 'week' ? 'bg-primary text-white shadow-xs' : 'text-text-secondary hover:text-text-primary'
               }`}
             >
-              Week
+              Tuần
             </button>
             <button
               type="button"
               onClick={() => setViewMode('day')}
               className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
-                viewMode === 'day' ? 'bg-indigo-600 text-white' : 'text-gray-400 hover:text-white'
+                viewMode === 'day' ? 'bg-primary text-white shadow-xs' : 'text-text-secondary hover:text-text-primary'
               }`}
             >
-              Day
+              Ngày
             </button>
           </div>
 
           <button
             type="button"
             onClick={() => handleOpenCreateModal()}
-            className="flex items-center space-x-1 rounded-xl bg-indigo-600 px-4 py-2 text-xs font-semibold text-white hover:bg-indigo-500 transition"
+            className="flex items-center space-x-1.5 rounded-xl bg-primary px-4 py-2 text-xs font-semibold text-white hover:bg-primary-hover shadow-sm transition active:scale-95"
           >
             <Plus className="h-4 w-4" />
-            <span>Add Event</span>
+            <span>Thêm sự kiện</span>
           </button>
         </div>
       </div>
@@ -121,32 +136,32 @@ export default function CalendarPage() {
           <button
             type="button"
             onClick={handlePrev}
-            className="rounded-lg p-1.5 border border-white/10 text-gray-300 hover:bg-white/10 hover:text-white transition"
+            className="rounded-lg p-1.5 border border-surface-border bg-surface text-text-secondary hover:bg-surface-alt hover:text-text-primary transition"
           >
             <ChevronLeft className="h-4 w-4" />
           </button>
           <button
             type="button"
             onClick={handleToday}
-            className="rounded-lg border border-white/10 bg-white/5 px-3 py-1 text-xs font-semibold text-gray-300 hover:bg-white/10 hover:text-white transition"
+            className="rounded-lg border border-surface-border bg-surface px-3 py-1 text-xs font-semibold text-text-primary hover:bg-surface-alt transition"
           >
-            Today
+            Hôm nay
           </button>
           <button
             type="button"
             onClick={handleNext}
-            className="rounded-lg p-1.5 border border-white/10 text-gray-300 hover:bg-white/10 hover:text-white transition"
+            className="rounded-lg p-1.5 border border-surface-border bg-surface text-text-secondary hover:bg-surface-alt hover:text-text-primary transition"
           >
             <ChevronRight className="h-4 w-4" />
           </button>
 
-          <span className="text-sm font-bold text-white font-heading pl-2">{formattedMonthYear}</span>
+          <span className="text-sm font-bold text-text-primary font-heading pl-2 capitalize">{formattedMonthYear}</span>
         </div>
       </div>
 
       {/* Active Calendar View */}
       {isLoading ? (
-        <div className="h-96 animate-pulse rounded-2xl bg-gray-900/60" />
+        <div className="h-96 animate-pulse rounded-2xl bg-surface-alt" />
       ) : (
         <>
           {viewMode === 'month' && (

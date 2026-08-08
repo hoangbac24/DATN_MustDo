@@ -72,17 +72,21 @@ public class ActivityLogServiceImpl implements ActivityLogService {
 
     @Override
     @Transactional(readOnly = true)
-    public PageResponse<ActivityLogDto> getProjectActivities(UUID userId, UUID projectId, Pageable pageable) {
+    public PageResponse<ActivityLogDto> getProjectActivities(UUID userId, UUID projectId, String entityType, Pageable pageable) {
         projectService.getProjectDetails(userId, projectId);
-        Page<ActivityLogEntity> page = activityLogRepository.findByProjectIdAndIsDeletedFalseOrderByCreatedAtDesc(projectId, pageable);
+        Page<ActivityLogEntity> page = (entityType != null && !entityType.isBlank())
+                ? activityLogRepository.findByProjectIdAndEntityTypeAndIsDeletedFalseOrderByCreatedAtDesc(projectId, entityType.trim(), pageable)
+                : activityLogRepository.findByProjectIdAndIsDeletedFalseOrderByCreatedAtDesc(projectId, pageable);
         return mapPageToResponse(page);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public PageResponse<ActivityLogDto> getWorkspaceActivities(UUID userId, UUID workspaceId, Pageable pageable) {
+    public PageResponse<ActivityLogDto> getWorkspaceActivities(UUID userId, UUID workspaceId, String entityType, Pageable pageable) {
         workspaceService.getWorkspaceDetails(userId, workspaceId);
-        Page<ActivityLogEntity> page = activityLogRepository.findByWorkspaceIdAndIsDeletedFalseOrderByCreatedAtDesc(workspaceId, pageable);
+        Page<ActivityLogEntity> page = (entityType != null && !entityType.isBlank())
+                ? activityLogRepository.findByWorkspaceIdAndEntityTypeAndIsDeletedFalseOrderByCreatedAtDesc(workspaceId, entityType.trim(), pageable)
+                : activityLogRepository.findByWorkspaceIdAndIsDeletedFalseOrderByCreatedAtDesc(workspaceId, pageable);
         return mapPageToResponse(page);
     }
 

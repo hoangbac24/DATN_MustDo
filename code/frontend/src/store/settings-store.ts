@@ -25,7 +25,7 @@ export const useSettingsStore = create<UserSettingsState>()(
   persist(
     (set) => ({
       theme: 'dark',
-      language: 'en',
+      language: 'vi',
       timezone: 'UTC',
       dateFormat: 'YYYY-MM-DD',
       emailNotifications: true,

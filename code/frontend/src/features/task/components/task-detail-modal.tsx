@@ -5,7 +5,7 @@ import { Calendar, Trash2, Edit3, Archive, X, CheckSquare } from 'lucide-react';
 import type { TaskDto, TaskStatus } from '../types';
 import { TaskStatusBadge } from './task-status-badge';
 import { TaskPriorityBadge } from './task-priority-badge';
-import { useDeleteTask, useToggleArchiveTask, useUpdateTaskStatus } from '../hooks/use-task';
+import { useAssignTask, useDeleteTask, useToggleArchiveTask, useUpdateTaskStatus } from '../hooks/use-task';
 
 import { AttachmentList } from '@/features/attachment/components/attachment-list';
 import { ChecklistComponent } from '@/features/checklist/components/checklist-component';
@@ -13,19 +13,34 @@ import { CommentList } from '@/features/comment/components/comment-list';
 import { ReminderList } from '@/features/reminder/components/reminder-list';
 import { TagSelector } from '@/features/tag/components/tag-selector';
 import { useWorkspaceStore } from '@/store/workspace-store';
+import { useWorkspaceMembers } from '@/features/workspace/hooks/use-workspace';
 
 interface TaskDetailModalProps {
   task: TaskDto | null;
   isOpen: boolean;
   onClose: () => void;
-  onEdit: (task: TaskDto) => void;
+  onEdit?: (task: TaskDto) => void;
 }
 
 export function TaskDetailModal({ task, isOpen, onClose, onEdit }: TaskDetailModalProps) {
   const updateStatus = useUpdateTaskStatus();
   const toggleArchive = useToggleArchiveTask();
   const deleteTask = useDeleteTask();
+  const assignTask = useAssignTask();
   const activeWorkspaceId = useWorkspaceStore((state) => state.activeWorkspaceId);
+  const { data: members = [] } = useWorkspaceMembers(activeWorkspaceId);
+
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+    if (isOpen) {
+      window.addEventListener('keydown', handleKeyDown);
+    }
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
 
   if (!isOpen || !task) return null;
 
@@ -42,8 +57,8 @@ export function TaskDetailModal({ task, isOpen, onClose, onEdit }: TaskDetailMod
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-md">
-      <div className="w-full max-w-xl rounded-2xl border border-white/10 bg-[#111827] p-6 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-0 sm:p-4 backdrop-blur-md">
+      <div className="h-full w-full sm:h-auto sm:max-w-xl rounded-none sm:rounded-2xl border-0 sm:border border-white/10 bg-[#111827] p-6 shadow-2xl space-y-6 max-h-screen sm:max-h-[90vh] overflow-y-auto">
         {/* Modal Header */}
         <div className="flex items-start justify-between border-b border-white/10 pb-4">
           <div className="flex items-start space-x-3">
@@ -81,7 +96,28 @@ export function TaskDetailModal({ task, isOpen, onClose, onEdit }: TaskDetailMod
             </p>
           </div>
 
-          <div className="grid grid-cols-2 gap-4 border-t border-b border-white/5 py-4 text-xs">
+          <div className="grid grid-cols-3 gap-4 border-t border-b border-white/5 py-4 text-xs">
+            <div>
+              <span className="text-gray-400">Assignee</span>
+              <div className="mt-1 flex items-center space-x-2">
+                <select
+                  value={task.assigneeId || ''}
+                  onChange={(e) => {
+                    const val = e.target.value || null;
+                    assignTask.mutate({ taskId: task.id, assigneeId: val });
+                  }}
+                  className="rounded-lg border border-white/10 bg-gray-900/80 px-2 py-1 text-xs text-white outline-none focus:border-indigo-500"
+                >
+                  <option value="">Unassigned</option>
+                  {members.map((m) => (
+                    <option key={m.userId} value={m.userId}>
+                      {m.fullName || m.email}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
             <div>
               <span className="text-gray-400">Due Date</span>
               <p className="mt-1 text-white font-medium flex items-center">
@@ -159,7 +195,9 @@ export function TaskDetailModal({ task, isOpen, onClose, onEdit }: TaskDetailMod
           <button
             onClick={() => {
               onClose();
-              onEdit(task);
+              if (onEdit) {
+                onEdit(task);
+              }
             }}
             className="flex items-center space-x-1.5 rounded-lg bg-indigo-600 px-4 py-1.5 text-xs font-semibold text-white hover:bg-indigo-500 transition"
           >

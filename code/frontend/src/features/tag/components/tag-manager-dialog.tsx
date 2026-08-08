@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { X, Tag, Plus, Edit2, Trash2, Check } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useWorkspaceTags, useCreateTag, useUpdateTag, useDeleteTag } from '../hooks/use-tag';
 import type { TagDto } from '../types';
 
@@ -23,6 +24,8 @@ interface TagManagerDialogProps {
 }
 
 export function TagManagerDialog({ workspaceId, isOpen, onClose }: TagManagerDialogProps) {
+  const { t } = useTranslation('task');
+  const { t: tCommon } = useTranslation('common');
   const { data: tags = [], isLoading } = useWorkspaceTags(workspaceId);
   const createTag = useCreateTag(workspaceId);
   const updateTag = useUpdateTag(workspaceId);
@@ -79,7 +82,7 @@ export function TagManagerDialog({ workspaceId, isOpen, onClose }: TagManagerDia
         <div className="flex items-center justify-between border-b border-white/10 pb-3">
           <div className="flex items-center space-x-2">
             <Tag className="h-5 w-5 text-indigo-400" />
-            <h3 className="text-base font-bold text-white font-heading">Workspace Tag Manager</h3>
+            <h3 className="text-base font-bold text-white font-heading">{t('fields.tags')}</h3>
           </div>
           <button onClick={onClose} className="rounded-lg p-1 text-gray-400 hover:bg-white/5 hover:text-white">
             <X className="h-4 w-4" />
@@ -91,7 +94,7 @@ export function TagManagerDialog({ workspaceId, isOpen, onClose }: TagManagerDia
           <div className="flex space-x-2">
             <input
               type="text"
-              placeholder={editingTag ? 'Edit tag name...' : 'New tag name...'}
+              placeholder={editingTag ? tCommon('actions.edit') : tCommon('actions.add')}
               value={name}
               onChange={(e) => setName(e.target.value)}
               className="flex-1 rounded-xl border border-white/10 bg-gray-900 px-3 py-2 text-xs text-white placeholder-gray-500 focus:border-indigo-500 focus:outline-none"
@@ -102,7 +105,7 @@ export function TagManagerDialog({ workspaceId, isOpen, onClose }: TagManagerDia
               className="flex items-center space-x-1 rounded-xl bg-indigo-600 px-3 py-2 text-xs font-semibold text-white hover:bg-indigo-500 disabled:opacity-40"
             >
               {editingTag ? <Check className="h-3.5 w-3.5" /> : <Plus className="h-3.5 w-3.5" />}
-              <span>{editingTag ? 'Update' : 'Add'}</span>
+              <span>{editingTag ? tCommon('actions.update') : tCommon('actions.add')}</span>
             </button>
             {editingTag && (
               <button
@@ -110,7 +113,7 @@ export function TagManagerDialog({ workspaceId, isOpen, onClose }: TagManagerDia
                 onClick={handleCancelEdit}
                 className="rounded-xl border border-white/10 px-3 py-2 text-xs text-gray-400 hover:text-white"
               >
-                Cancel
+                {tCommon('actions.cancel')}
               </button>
             )}
           </div>
@@ -136,7 +139,7 @@ export function TagManagerDialog({ workspaceId, isOpen, onClose }: TagManagerDia
 
         {/* Existing Tags List */}
         <div className="space-y-2 border-t border-white/10 pt-3">
-          <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Existing Tags ({tags.length})</span>
+          <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">{t('fields.tags')} ({tags.length})</span>
           {isLoading ? (
             <div className="h-10 animate-pulse rounded-lg bg-gray-900" />
           ) : (
@@ -167,7 +170,7 @@ export function TagManagerDialog({ workspaceId, isOpen, onClose }: TagManagerDia
                 </div>
               ))}
               {tags.length === 0 && (
-                <p className="text-center py-3 text-xs text-gray-500 italic">No workspace tags created yet.</p>
+                <p className="text-center py-3 text-xs text-gray-500 italic">{tCommon('emptyState.description')}</p>
               )}
             </div>
           )}

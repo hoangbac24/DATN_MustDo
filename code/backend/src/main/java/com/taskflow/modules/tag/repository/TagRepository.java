@@ -20,6 +20,6 @@ public interface TagRepository extends JpaRepository<TagEntity, UUID> {
     boolean existsByWorkspaceIdAndNameIgnoreCaseAndIsDeletedFalse(UUID workspaceId, String name);
 
     @Query("SELECT t FROM TagEntity t WHERE t.workspaceId = :workspaceId AND t.isDeleted = false " +
-           "AND (:search IS NULL OR LOWER(t.name) LIKE LOWER(CONCAT('%', :search, '%'))) ORDER BY t.name ASC")
+           "AND (cast(:search as string) IS NULL OR LOWER(t.name) LIKE LOWER(CONCAT('%', cast(:search as string), '%'))) ORDER BY t.name ASC")
     List<TagEntity> searchWorkspaceTags(@Param("workspaceId") UUID workspaceId, @Param("search") String search);
 }

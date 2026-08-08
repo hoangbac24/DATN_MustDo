@@ -11,6 +11,7 @@ import com.taskflow.modules.tag.entity.TagEntity;
 import com.taskflow.modules.tag.repository.TagRepository;
 import com.taskflow.modules.task.entity.TaskEntity;
 import com.taskflow.modules.task.repository.TaskRepository;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -19,6 +20,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Component
+@Primary
 public class PostgresSearchProvider implements SearchProvider {
 
     private final TaskRepository taskRepository;

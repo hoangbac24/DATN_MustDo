@@ -11,6 +11,9 @@ import {
 } from '@/features/notification/hooks/use-notification';
 import { NotificationItem } from '@/features/notification/components/notification-item';
 
+import { NotificationListSkeleton } from '@/components/ui/skeletons/notification-list-skeleton';
+import { EmptyState } from '@/components/ui/empty-state';
+
 export default function NotificationsPage() {
   const [page, setPage] = useState(0);
   const [unreadOnly, setUnreadOnly] = useState(false);
@@ -118,11 +121,13 @@ export default function NotificationsPage() {
 
       {/* Notification List */}
       {isLoading ? (
-        <div className="space-y-3">
-          <div className="h-20 animate-pulse rounded-2xl bg-gray-900/60" />
-          <div className="h-20 animate-pulse rounded-2xl bg-gray-900/60" />
-          <div className="h-20 animate-pulse rounded-2xl bg-gray-900/60" />
-        </div>
+        <NotificationListSkeleton count={4} />
+      ) : notifications.length === 0 ? (
+        <EmptyState
+          icon={Inbox}
+          title="You're all caught up!"
+          description={unreadOnly ? 'No unread notifications at the moment.' : 'No new notifications to display right now.'}
+        />
       ) : (
         <div className="space-y-2.5">
           {notifications.map((notification) => (
@@ -134,14 +139,6 @@ export default function NotificationsPage() {
               onClick={() => handleNotificationClick(notification.id, notification.link, notification.isRead)}
             />
           ))}
-
-          {notifications.length === 0 && (
-            <div className="flex flex-col items-center justify-center py-16 text-center space-y-3 rounded-2xl border border-white/5 bg-gray-950/20">
-              <Inbox className="h-10 w-10 text-gray-600" />
-              <p className="text-sm font-medium text-gray-400">No notifications to show</p>
-              <p className="text-xs text-gray-600">You're all caught up!</p>
-            </div>
-          )}
         </div>
       )}
     </div>

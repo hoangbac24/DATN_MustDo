@@ -5,13 +5,14 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { CheckSquare, Loader2, X } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import type { TaskDto, TaskPriority, TaskStatus } from '../types';
-import { useCreateTask, useUpdateTask } from '../hooks/use-task';
+import { useCreateTask, useCreateWorkspaceTask, useUpdateTask } from '../hooks/use-task';
 
 const taskSchema = z.object({
-  title: z.string().min(1, 'Task title is required'),
+  title: z.string().min(1, 'Tên công việc không được để trống'),
   description: z.string().optional(),
-  status: z.enum(['TODO', 'IN_PROGRESS', 'IN_REVIEW', 'COMPLETED', 'CANCELLED']),
+  status: z.enum(['TODO', 'IN_PROGRESS', 'IN_REVIEW', 'COMPLETED', 'DONE', 'CANCELLED']),
   priority: z.enum(['LOW', 'MEDIUM', 'HIGH', 'URGENT']),
   dueDate: z.string().optional(),
 });
@@ -19,16 +20,20 @@ const taskSchema = z.object({
 type TaskFormData = z.infer<typeof taskSchema>;
 
 interface TaskFormDialogProps {
-  projectId: string;
+  projectId?: string;
+  workspaceId?: string;
   task?: TaskDto | null;
   isOpen: boolean;
   onClose: () => void;
 }
 
-export function TaskFormDialog({ projectId, task, isOpen, onClose }: TaskFormDialogProps) {
+export function TaskFormDialog({ projectId = '', workspaceId = '', task, isOpen, onClose }: TaskFormDialogProps) {
+  const { t: tTask } = useTranslation('task');
+  const { t: tCommon } = useTranslation('common');
   const isEditing = !!task;
 
-  const createMutation = useCreateTask(projectId);
+  const createProjectTaskMutation = useCreateTask(projectId);
+  const createWorkspaceTaskMutation = useCreateWorkspaceTask(workspaceId);
   const updateMutation = useUpdateTask(task?.id || '');
 
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -89,12 +94,12 @@ export function TaskFormDialog({ projectId, task, isOpen, onClose }: TaskFormDia
             onClose();
           },
           onError: (err: any) => {
-            setErrorMessage(err.response?.data?.message || 'Failed to update task.');
+            setErrorMessage(err.response?.data?.message || 'Cập nhật công việc thất bại.');
           },
         }
       );
-    } else {
-      createMutation.mutate(
+    } else if (workspaceId) {
+      createWorkspaceTaskMutation.mutate(
         {
           title: data.title,
           description: data.description || undefined,
@@ -108,120 +113,140 @@ export function TaskFormDialog({ projectId, task, isOpen, onClose }: TaskFormDia
             onClose();
           },
           onError: (err: any) => {
-            setErrorMessage(err.response?.data?.message || 'Failed to create task.');
+            setErrorMessage(err.response?.data?.message || 'Tạo công việc thất bại.');
+          },
+        }
+      );
+    } else {
+      createProjectTaskMutation.mutate(
+        {
+          title: data.title,
+          description: data.description || undefined,
+          status: data.status as TaskStatus,
+          priority: data.priority as TaskPriority,
+          dueDate: dueDateInstant,
+        },
+        {
+          onSuccess: () => {
+            reset();
+            onClose();
+          },
+          onError: (err: any) => {
+            setErrorMessage(err.response?.data?.message || 'Tạo công việc thất bại.');
           },
         }
       );
     }
   };
 
-  const isPending = createMutation.isPending || updateMutation.isPending;
+  const isPending = createProjectTaskMutation.isPending || createWorkspaceTaskMutation.isPending || updateMutation.isPending;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-md">
-      <div className="w-full max-w-lg rounded-2xl border border-white/10 bg-[#111827] p-6 shadow-2xl space-y-4">
-        <div className="flex items-center justify-between border-b border-white/10 pb-4">
+      <div className="w-full max-w-lg rounded-2xl border border-surface-border bg-surface p-6 shadow-2xl space-y-4 text-text-primary">
+        <div className="flex items-center justify-between border-b border-surface-border pb-4">
           <div className="flex items-center space-x-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-600/20 text-indigo-400">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
               <CheckSquare className="h-4 w-4" />
             </div>
-            <h2 className="text-sm font-semibold text-white font-heading">
-              {isEditing ? 'Edit Task' : 'Create New Task'}
+            <h2 className="text-sm font-semibold text-text-primary font-heading">
+              {isEditing ? 'Chỉnh sửa công việc' : tTask('createTask', { defaultValue: 'Tạo công việc mới' })}
             </h2>
           </div>
           <button
             onClick={onClose}
-            className="rounded-lg p-1 text-gray-400 hover:bg-white/5 hover:text-white"
+            className="rounded-lg p-1 text-text-muted hover:bg-surface-alt hover:text-text-primary transition"
           >
             <X className="h-4 w-4" />
           </button>
         </div>
 
         {errorMessage && (
-          <div className="rounded-lg border border-red-500/20 bg-red-500/10 p-3 text-xs text-red-400">
+          <div className="rounded-lg border border-status-error/30 bg-status-error/10 p-3 text-xs text-status-error">
             {errorMessage}
           </div>
         )}
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-1">
-            <label className="text-xs font-medium text-gray-300">Task Title</label>
+            <label className="text-xs font-medium text-text-secondary">Tên công việc *</label>
             <input
               {...register('title')}
               type="text"
-              placeholder="e.g. Implement authentication flow"
-              className="w-full rounded-lg border border-white/10 bg-gray-900/60 p-2.5 text-xs text-white placeholder-gray-500 transition focus:border-indigo-500 focus:outline-none"
+              placeholder="Ví dụ: Triển khai luồng đăng nhập"
+              className="w-full rounded-lg border border-surface-border bg-surface-alt p-2.5 text-xs text-text-primary placeholder:text-text-muted transition focus:border-primary focus:outline-none"
             />
-            {errors.title && <p className="text-[11px] text-red-400">{errors.title.message}</p>}
+            {errors.title && <p className="text-[11px] text-status-error">{errors.title.message}</p>}
           </div>
 
           <div className="space-y-1">
-            <label className="text-xs font-medium text-gray-300">Description</label>
+            <label className="text-xs font-medium text-text-secondary">Mô tả</label>
             <textarea
               {...register('description')}
               rows={4}
-              placeholder="Task details and acceptance criteria..."
-              className="w-full rounded-lg border border-white/10 bg-gray-900/60 p-2.5 text-xs text-white placeholder-gray-500 transition focus:border-indigo-500 focus:outline-none"
+              placeholder="Chi tiết công việc và tiêu chuẩn hoàn thành..."
+              className="w-full rounded-lg border border-surface-border bg-surface-alt p-2.5 text-xs text-text-primary placeholder:text-text-muted transition focus:border-primary focus:outline-none"
             />
           </div>
 
           <div className="grid grid-cols-3 gap-3">
             <div className="space-y-1">
-              <label className="text-xs font-medium text-gray-300">Status</label>
+              <label className="text-xs font-medium text-text-secondary">Trạng thái</label>
               <select
                 {...register('status')}
-                className="w-full rounded-lg border border-white/10 bg-gray-900/60 p-2.5 text-xs text-white transition focus:border-indigo-500 focus:outline-none"
+                className="w-full rounded-lg border border-surface-border bg-surface-alt p-2 text-xs text-text-primary transition focus:border-primary focus:outline-none cursor-pointer"
               >
-                <option value="TODO">To Do</option>
-                <option value="IN_PROGRESS">In Progress</option>
-                <option value="IN_REVIEW">In Review</option>
-                <option value="COMPLETED">Completed</option>
-                <option value="CANCELLED">Cancelled</option>
+                <option value="TODO" className="bg-surface text-text-primary">{tTask('statuses.TODO', { defaultValue: 'Cần làm' })}</option>
+                <option value="IN_PROGRESS" className="bg-surface text-text-primary">{tTask('statuses.IN_PROGRESS', { defaultValue: 'Đang làm' })}</option>
+                <option value="IN_REVIEW" className="bg-surface text-text-primary">{tTask('statuses.IN_REVIEW', { defaultValue: 'Đang xem xét' })}</option>
+                <option value="DONE" className="bg-surface text-text-primary">{tTask('statuses.DONE', { defaultValue: 'Hoàn thành' })}</option>
+                <option value="COMPLETED" className="bg-surface text-text-primary">{tTask('statuses.DONE', { defaultValue: 'Hoàn thành' })}</option>
+                <option value="CANCELLED" className="bg-surface text-text-primary">{tTask('statuses.CANCELLED', { defaultValue: 'Đã hủy' })}</option>
               </select>
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-medium text-gray-300">Priority</label>
+              <label className="text-xs font-medium text-text-secondary">Độ ưu tiên</label>
               <select
                 {...register('priority')}
-                className="w-full rounded-lg border border-white/10 bg-gray-900/60 p-2.5 text-xs text-white transition focus:border-indigo-500 focus:outline-none"
+                className="w-full rounded-lg border border-surface-border bg-surface-alt p-2 text-xs text-text-primary transition focus:border-primary focus:outline-none cursor-pointer"
               >
-                <option value="LOW">Low</option>
-                <option value="MEDIUM">Medium</option>
-                <option value="HIGH">High</option>
-                <option value="URGENT">Urgent</option>
+                <option value="LOW" className="bg-surface text-text-primary">{tTask('priorities.LOW', { defaultValue: 'Thấp' })}</option>
+                <option value="MEDIUM" className="bg-surface text-text-primary">{tTask('priorities.MEDIUM', { defaultValue: 'Trung bình' })}</option>
+                <option value="HIGH" className="bg-surface text-text-primary">{tTask('priorities.HIGH', { defaultValue: 'Cao' })}</option>
+                <option value="URGENT" className="bg-surface text-text-primary">{tTask('priorities.URGENT', { defaultValue: 'Khẩn cấp' })}</option>
               </select>
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-medium text-gray-300">Due Date</label>
+              <label className="text-xs font-medium text-text-secondary">Hạn chót</label>
               <input
                 {...register('dueDate')}
                 type="date"
-                className="w-full rounded-lg border border-white/10 bg-gray-900/60 p-2.5 text-xs text-white transition focus:border-indigo-500 focus:outline-none"
+                className="w-full rounded-lg border border-surface-border bg-surface-alt p-2 text-xs text-text-primary transition focus:border-primary focus:outline-none cursor-pointer"
               />
             </div>
           </div>
 
-          <div className="flex items-center justify-end space-x-2 border-t border-white/10 pt-4">
+          <div className="flex items-center justify-end space-x-2 border-t border-surface-border pt-4">
             <button
               type="button"
               onClick={onClose}
-              className="rounded-lg border border-white/10 px-4 py-2 text-xs font-medium text-gray-300 hover:bg-white/5"
+              className="rounded-lg border border-surface-border px-4 py-2 text-xs font-medium text-text-secondary hover:bg-surface-alt transition"
             >
-              Cancel
+              {tCommon('actions.cancel')}
             </button>
             <button
               type="submit"
               disabled={isPending}
-              className="flex items-center justify-center rounded-lg bg-indigo-600 px-4 py-2 text-xs font-semibold text-white shadow-lg transition hover:bg-indigo-500 disabled:opacity-50"
+              className="flex items-center justify-center rounded-lg bg-primary px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-primary-hover active:scale-95 disabled:opacity-50"
             >
               {isPending ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : isEditing ? (
-                'Save Task'
+                'Lưu công việc'
               ) : (
-                'Create Task'
+                tTask('createTask', { defaultValue: 'Tạo công việc' })
               )}
             </button>
           </div>

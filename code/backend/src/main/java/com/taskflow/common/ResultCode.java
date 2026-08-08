@@ -8,8 +8,11 @@ public enum ResultCode {
     UNAUTHORIZED(401, "Authentication token missing or invalid"),
     FORBIDDEN(403, "Access denied"),
     NOT_FOUND(404, "Requested resource not found"),
+    RESOURCE_NOT_FOUND(404, "Requested resource not found"),
     METHOD_NOT_ALLOWED(405, "HTTP method not supported"),
     CONFLICT(409, "Resource state conflict"),
+    DATA_ALREADY_EXISTS(409, "Resource already exists"),
+    VALIDATION_ERROR(422, "Validation failed"),
     INTERNAL_SERVER_ERROR(500, "Internal server error");
 
     private final int code;

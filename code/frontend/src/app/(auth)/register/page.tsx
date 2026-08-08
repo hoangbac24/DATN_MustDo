@@ -7,17 +7,17 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Loader2, Lock, Mail, User } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useRegister } from '@/features/auth/hooks/use-auth';
 
 const registerSchema = z
   .object({
-    fullName: z.string().min(2, 'Full name must be at least 2 characters'),
-    email: z.string().email('Please enter a valid email address'),
-    password: z.string().min(8, 'Password must be at least 8 characters long'),
+    fullName: z.string().min(2),
+    email: z.string().email(),
+    password: z.string().min(8),
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {
-    message: 'Passwords do not match',
     path: ['confirmPassword'],
   });
 
@@ -25,6 +25,8 @@ type RegisterFormData = z.infer<typeof registerSchema>;
 
 export default function RegisterPage() {
   const router = useRouter();
+  const { t } = useTranslation('auth');
+  const { t: tVal } = useTranslation('validation');
   const registerMutation = useRegister();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -54,7 +56,7 @@ export default function RegisterPage() {
             const fieldErrors = Object.values(error.response.data.data).join(', ');
             if (fieldErrors) msg = fieldErrors;
           }
-          if (!msg) msg = error.message || 'Registration failed. Please try again.';
+          if (!msg) msg = error.message || t('messages.genericError', { defaultValue: 'Registration failed' });
           setErrorMessage(msg);
         },
       }
@@ -64,8 +66,8 @@ export default function RegisterPage() {
   return (
     <div className="space-y-6">
       <div className="space-y-1">
-        <h2 className="text-xl font-semibold text-white">Create your Account</h2>
-        <p className="text-xs text-gray-400">Join TaskFlow to streamline your productivity</p>
+        <h2 className="text-xl font-semibold text-white">{t('createAccount')}</h2>
+        <p className="text-xs text-gray-400">{t('registerSubtitle')}</p>
       </div>
 
       {errorMessage && (
@@ -76,60 +78,60 @@ export default function RegisterPage() {
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div className="space-y-1">
-          <label className="text-xs font-medium text-gray-300">Full Name</label>
+          <label className="text-xs font-medium text-gray-300">{t('labels.fullName')}</label>
           <div className="relative">
             <User className="absolute left-3 top-2.5 h-4 w-4 text-gray-500" />
             <input
               {...register('fullName')}
               type="text"
-              placeholder="John Doe"
+              placeholder={t('placeholders.fullName')}
               className="w-full rounded-lg border border-white/10 bg-gray-900/60 py-2 pl-9 pr-3 text-sm text-white placeholder-gray-500 transition focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
             />
           </div>
-          {errors.fullName && <p className="text-[11px] text-red-400">{errors.fullName.message}</p>}
+          {errors.fullName && <p className="text-[11px] text-red-400">{tVal('minName', { min: 2 })}</p>}
         </div>
 
         <div className="space-y-1">
-          <label className="text-xs font-medium text-gray-300">Email Address</label>
+          <label className="text-xs font-medium text-gray-300">{t('labels.email')}</label>
           <div className="relative">
             <Mail className="absolute left-3 top-2.5 h-4 w-4 text-gray-500" />
             <input
               {...register('email')}
               type="email"
-              placeholder="you@example.com"
+              placeholder={t('placeholders.email')}
               className="w-full rounded-lg border border-white/10 bg-gray-900/60 py-2 pl-9 pr-3 text-sm text-white placeholder-gray-500 transition focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
             />
           </div>
-          {errors.email && <p className="text-[11px] text-red-400">{errors.email.message}</p>}
+          {errors.email && <p className="text-[11px] text-red-400">{tVal('invalidEmail')}</p>}
         </div>
 
         <div className="space-y-1">
-          <label className="text-xs font-medium text-gray-300">Password</label>
+          <label className="text-xs font-medium text-gray-300">{t('labels.password')}</label>
           <div className="relative">
             <Lock className="absolute left-3 top-2.5 h-4 w-4 text-gray-500" />
             <input
               {...register('password')}
               type="password"
-              placeholder="••••••••"
+              placeholder={t('placeholders.password')}
               className="w-full rounded-lg border border-white/10 bg-gray-900/60 py-2 pl-9 pr-3 text-sm text-white placeholder-gray-500 transition focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
             />
           </div>
-          {errors.password && <p className="text-[11px] text-red-400">{errors.password.message}</p>}
+          {errors.password && <p className="text-[11px] text-red-400">{tVal('minPassword', { min: 8 })}</p>}
         </div>
 
         <div className="space-y-1">
-          <label className="text-xs font-medium text-gray-300">Confirm Password</label>
+          <label className="text-xs font-medium text-gray-300">{t('labels.confirmPassword')}</label>
           <div className="relative">
             <Lock className="absolute left-3 top-2.5 h-4 w-4 text-gray-500" />
             <input
               {...register('confirmPassword')}
               type="password"
-              placeholder="••••••••"
+              placeholder={t('placeholders.password')}
               className="w-full rounded-lg border border-white/10 bg-gray-900/60 py-2 pl-9 pr-3 text-sm text-white placeholder-gray-500 transition focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
             />
           </div>
           {errors.confirmPassword && (
-            <p className="text-[11px] text-red-400">{errors.confirmPassword.message}</p>
+            <p className="text-[11px] text-red-400">{tVal('passwordMismatch')}</p>
           )}
         </div>
 
@@ -141,15 +143,15 @@ export default function RegisterPage() {
           {registerMutation.isPending ? (
             <Loader2 className="h-4 w-4 animate-spin" />
           ) : (
-            'Get Started'
+            t('actions.register')
           )}
         </button>
       </form>
 
       <div className="text-center text-xs text-gray-400">
-        Already have an account?{' '}
+        {t('actions.alreadyHaveAccount')}{' '}
         <Link href={'/login' as any} className="font-medium text-indigo-400 hover:underline">
-          Sign In
+          {t('actions.login')}
         </Link>
       </div>
     </div>

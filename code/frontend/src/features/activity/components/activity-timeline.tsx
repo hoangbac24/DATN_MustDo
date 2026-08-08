@@ -1,98 +1,86 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Activity, ChevronLeft, ChevronRight } from 'lucide-react';
-import { useUserActivities, useProjectActivities, useWorkspaceActivities } from '../hooks/use-activity';
+import React, { useEffect, useRef } from 'react';
+import { Loader2, CheckCircle2 } from 'lucide-react';
+import type { ActivityGroup } from '../types';
 import { ActivityItem } from './activity-item';
-import { ActivityFilter } from './activity-filter';
 
 interface ActivityTimelineProps {
-  projectId?: string;
-  workspaceId?: string;
-  title?: string;
+  groups: ActivityGroup[];
+  isFetchingNextPage: boolean;
+  hasNextPage: boolean;
+  onLoadMore: () => void;
 }
 
-export function ActivityTimeline({ projectId, workspaceId, title = 'Activity Log' }: ActivityTimelineProps) {
-  const [page, setPage] = useState(0);
-  const [entityType, setEntityType] = useState<string | undefined>(undefined);
+export function ActivityTimeline({
+  groups,
+  isFetchingNextPage,
+  hasNextPage,
+  onLoadMore,
+}: ActivityTimelineProps) {
+  const sentinelRef = useRef<HTMLDivElement>(null);
 
-  const userQuery = useUserActivities(page, 15, entityType);
-  const projectQuery = useProjectActivities(projectId || null, page, 15);
-  const workspaceQuery = useWorkspaceActivities(workspaceId || null, page, 15);
+  // Intersection Observer for infinite scroll
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    if (!sentinel) return;
 
-  const activeQuery = projectId ? projectQuery : workspaceId ? workspaceQuery : userQuery;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+          onLoadMore();
+        }
+      },
+      { threshold: 0.5 }
+    );
 
-  const { data, isLoading } = activeQuery;
-  const activities = data?.items || [];
-  const totalElements = data?.totalElements || 0;
-  const totalPages = data?.totalPages || 0;
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [hasNextPage, isFetchingNextPage, onLoadMore]);
+
+  if (groups.length === 0) return null;
 
   return (
-    <div className="space-y-4 rounded-xl border border-white/10 bg-gray-950/40 p-4">
-      {/* Header & Filter Toolbar */}
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-b border-white/10 pb-3">
-        <div className="flex items-center space-x-2">
-          <Activity className="h-4 w-4 text-indigo-400" />
-          <h3 className="text-xs font-semibold text-gray-300 uppercase tracking-wider">
-            {title} ({totalElements})
-          </h3>
-        </div>
+    <div className="space-y-8">
+      {groups.map((group) => (
+        <div key={group.dateLabel}>
+          {/* Date Group Header */}
+          <div className="flex items-center gap-3 mb-4">
+            <div className="h-px flex-1 bg-white/10" />
+            <span className="rounded-xl border border-white/10 bg-white/5 px-3 py-1 text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+              {group.dateLabel}
+            </span>
+            <div className="h-px flex-1 bg-white/10" />
+          </div>
 
-        {!projectId && !workspaceId && (
-          <ActivityFilter
-            selectedType={entityType}
-            onSelectType={(type) => {
-              setEntityType(type);
-              setPage(0);
-            }}
-          />
-        )}
-      </div>
+          {/* Items with timeline line */}
+          <div className="relative pl-2">
+            {/* Vertical timeline line */}
+            <div className="absolute left-6 top-4 bottom-4 w-px bg-gradient-to-b from-white/10 via-white/5 to-transparent" />
 
-      {/* Timeline List */}
-      {isLoading ? (
-        <div className="space-y-2 py-2">
-          <div className="h-14 animate-pulse rounded-xl bg-gray-900/60" />
-          <div className="h-14 animate-pulse rounded-xl bg-gray-900/60" />
-        </div>
-      ) : (
-        <div className="space-y-2 pt-1">
-          {activities.map((activity) => (
-            <ActivityItem key={activity.id} activity={activity} />
-          ))}
-
-          {activities.length === 0 && (
-            <p className="text-center py-6 text-xs text-gray-500 italic">No recent activity recorded.</p>
-          )}
-        </div>
-      )}
-
-      {/* Pagination Controls */}
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between border-t border-white/10 pt-3 text-xs text-gray-400">
-          <span>
-            Page {page + 1} of {totalPages}
-          </span>
-          <div className="flex items-center space-x-1.5">
-            <button
-              type="button"
-              disabled={page === 0}
-              onClick={() => setPage((p) => Math.max(0, p - 1))}
-              className="rounded p-1 border border-white/10 hover:bg-white/10 disabled:opacity-30 transition"
-            >
-              <ChevronLeft className="h-3.5 w-3.5" />
-            </button>
-            <button
-              type="button"
-              disabled={data?.last}
-              onClick={() => setPage((p) => p + 1)}
-              className="rounded p-1 border border-white/10 hover:bg-white/10 disabled:opacity-30 transition"
-            >
-              <ChevronRight className="h-3.5 w-3.5" />
-            </button>
+            <div className="space-y-0 divide-y divide-white/5">
+              {group.items.map((item) => (
+                <ActivityItem key={item.id} activity={item} />
+              ))}
+            </div>
           </div>
         </div>
-      )}
+      ))}
+
+      {/* Infinite scroll sentinel */}
+      <div ref={sentinelRef} className="flex items-center justify-center py-6">
+        {isFetchingNextPage ? (
+          <div className="flex items-center space-x-2 text-xs text-gray-500">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            <span>Loading more…</span>
+          </div>
+        ) : !hasNextPage ? (
+          <div className="flex items-center space-x-2 text-xs text-gray-600">
+            <CheckCircle2 className="h-4 w-4" />
+            <span>All activities loaded</span>
+          </div>
+        ) : null}
+      </div>
     </div>
   );
 }

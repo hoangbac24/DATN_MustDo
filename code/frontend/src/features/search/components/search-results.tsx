@@ -3,7 +3,9 @@
 import React from 'react';
 import { SearchResultItem } from './search-result-item';
 import type { GlobalSearchResultDto } from '../types';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Search } from 'lucide-react';
+import { EmptyState } from '@/components/ui/empty-state';
+import { useTranslation } from 'react-i18next';
 
 interface SearchResultsProps {
   data?: GlobalSearchResultDto;
@@ -13,12 +15,14 @@ interface SearchResultsProps {
 }
 
 export function SearchResults({ data, isLoading, onSelectResult, onPageChange }: SearchResultsProps) {
+  const { t } = useTranslation('search');
+
   if (isLoading) {
     return (
       <div className="space-y-2 py-4">
-        <div className="h-14 animate-pulse rounded-xl bg-gray-900/60" />
-        <div className="h-14 animate-pulse rounded-xl bg-gray-900/60" />
-        <div className="h-14 animate-pulse rounded-xl bg-gray-900/60" />
+        <div className="h-14 animate-pulse rounded-xl bg-surface-alt" />
+        <div className="h-14 animate-pulse rounded-xl bg-surface-alt" />
+        <div className="h-14 animate-pulse rounded-xl bg-surface-alt" />
       </div>
     );
   }
@@ -30,9 +34,11 @@ export function SearchResults({ data, isLoading, onSelectResult, onPageChange }:
 
   if (items.length === 0) {
     return (
-      <div className="text-center py-12 text-gray-500 text-xs italic">
-        No results found matching your search criteria.
-      </div>
+      <EmptyState
+        icon={Search}
+        title={t('noResultsTitle')}
+        description={t('noResultsDesc')}
+      />
     );
   }
 
@@ -45,16 +51,16 @@ export function SearchResults({ data, isLoading, onSelectResult, onPageChange }:
       </div>
 
       {totalPages > 1 && (
-        <div className="flex items-center justify-between border-t border-white/10 pt-3 text-xs text-gray-400">
+        <div className="flex items-center justify-between border-t border-surface-border pt-3 text-xs text-text-secondary">
           <span>
-            {totalElements} results found (Page {page + 1} of {totalPages})
+            {t('pagination', { total: totalElements, page: page + 1, totalPages })}
           </span>
           <div className="flex items-center space-x-1">
             <button
               type="button"
               disabled={page === 0}
               onClick={() => onPageChange(page - 1)}
-              className="rounded p-1 border border-white/10 hover:bg-white/10 disabled:opacity-30 transition"
+              className="rounded p-1 border border-surface-border hover:bg-surface-alt disabled:opacity-30 transition"
             >
               <ChevronLeft className="h-3.5 w-3.5" />
             </button>
@@ -62,7 +68,7 @@ export function SearchResults({ data, isLoading, onSelectResult, onPageChange }:
               type="button"
               disabled={data?.last}
               onClick={() => onPageChange(page + 1)}
-              className="rounded p-1 border border-white/10 hover:bg-white/10 disabled:opacity-30 transition"
+              className="rounded p-1 border border-surface-border hover:bg-surface-alt disabled:opacity-30 transition"
             >
               <ChevronRight className="h-3.5 w-3.5" />
             </button>

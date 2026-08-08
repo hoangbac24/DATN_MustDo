@@ -1,11 +1,19 @@
 import React from 'react';
 import { WorkspaceSidebar } from '@/features/workspace/components/workspace-sidebar';
+import Topbar from '@/components/Topbar';
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex min-h-screen bg-[#090d16] text-white">
+    <div className="flex min-h-screen bg-background text-foreground transition-colors duration-200">
       <WorkspaceSidebar />
-      <main className="flex-1 overflow-y-auto p-8">{children}</main>
+      <div className="flex flex-1 flex-col overflow-hidden">
+        <Topbar />
+        <main className="flex-1 overflow-y-auto p-4 md:p-6 pb-16 md:pb-8">
+          <div className="mx-auto max-w-7xl">
+            {children}
+          </div>
+        </main>
+      </div>
     </div>
   );
 }

@@ -17,6 +17,6 @@ public interface CommentRepository extends JpaRepository<CommentEntity, UUID> {
     Optional<CommentEntity> findByIdAndIsDeletedFalse(UUID id);
 
     @org.springframework.data.jpa.repository.Query("SELECT c FROM CommentEntity c WHERE c.isDeleted = false " +
-           "AND LOWER(c.content) LIKE LOWER(CONCAT('%', :search, '%'))")
+           "AND (cast(:search as string) IS NULL OR LOWER(c.content) LIKE LOWER(CONCAT('%', cast(:search as string), '%')))")
     java.util.List<CommentEntity> searchComments(@org.springframework.data.repository.query.Param("search") String search);
 }

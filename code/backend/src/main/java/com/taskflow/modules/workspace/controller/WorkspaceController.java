@@ -13,6 +13,10 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import com.taskflow.modules.workspace.dto.InviteMemberRequest;
+import com.taskflow.modules.workspace.dto.UpdateMemberRoleRequest;
+import com.taskflow.modules.workspace.dto.WorkspaceInvitationDto;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -85,9 +89,78 @@ public class WorkspaceController {
     @GetMapping("/{workspaceId}/members")
     @Operation(summary = "Get members of a workspace")
     public ResponseEntity<ApiResponse<List<WorkspaceMemberDto>>> getWorkspaceMembers(
-            @AuthenticationPrincipal UserPrincipal principal,
+            @org.springframework.security.core.annotation.AuthenticationPrincipal UserPrincipal principal,
             @PathVariable UUID workspaceId) {
         List<WorkspaceMemberDto> members = workspaceService.getWorkspaceMembers(principal.getId(), workspaceId);
         return ResponseEntity.ok(ApiResponse.success("Workspace members retrieved successfully", members));
+    }
+
+    @PostMapping("/{workspaceId}/invitations")
+    @Operation(summary = "Invite a new member to a workspace by email")
+    public ResponseEntity<ApiResponse<WorkspaceInvitationDto>> inviteMember(
+            @org.springframework.security.core.annotation.AuthenticationPrincipal UserPrincipal principal,
+            @PathVariable UUID workspaceId,
+            @Valid @RequestBody InviteMemberRequest request) {
+        WorkspaceInvitationDto invitation = workspaceService.inviteMember(principal.getId(), workspaceId, request);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success("Workspace invitation sent successfully", invitation));
+    }
+
+    @GetMapping("/{workspaceId}/invitations")
+    @Operation(summary = "Get pending invitations for a workspace")
+    public ResponseEntity<ApiResponse<List<WorkspaceInvitationDto>>> getPendingInvitations(
+            @org.springframework.security.core.annotation.AuthenticationPrincipal UserPrincipal principal,
+            @PathVariable UUID workspaceId) {
+        List<WorkspaceInvitationDto> invitations = workspaceService.getPendingInvitations(principal.getId(), workspaceId);
+        return ResponseEntity.ok(ApiResponse.success("Pending workspace invitations retrieved successfully", invitations));
+    }
+
+    @PostMapping("/invitations/{token}/accept")
+    @Operation(summary = "Accept a workspace invitation via token")
+    public ResponseEntity<ApiResponse<WorkspaceMemberDto>> acceptInvitation(
+            @org.springframework.security.core.annotation.AuthenticationPrincipal UserPrincipal principal,
+            @PathVariable String token) {
+        WorkspaceMemberDto member = workspaceService.acceptInvitation(principal.getId(), token);
+        return ResponseEntity.ok(ApiResponse.success("Workspace invitation accepted successfully", member));
+    }
+
+    @PatchMapping("/{workspaceId}/members/{memberId}/role")
+    @Operation(summary = "Update role of a workspace member")
+    public ResponseEntity<ApiResponse<WorkspaceMemberDto>> updateMemberRole(
+            @org.springframework.security.core.annotation.AuthenticationPrincipal UserPrincipal principal,
+            @PathVariable UUID workspaceId,
+            @PathVariable UUID memberId,
+            @Valid @RequestBody UpdateMemberRoleRequest request) {
+        WorkspaceMemberDto member = workspaceService.updateMemberRole(principal.getId(), workspaceId, memberId, request);
+        return ResponseEntity.ok(ApiResponse.success("Member role updated successfully", member));
+    }
+
+    @DeleteMapping("/{workspaceId}/members/{memberId}")
+    @Operation(summary = "Remove a member from a workspace")
+    public ResponseEntity<ApiResponse<Void>> removeMember(
+            @org.springframework.security.core.annotation.AuthenticationPrincipal UserPrincipal principal,
+            @PathVariable UUID workspaceId,
+            @PathVariable UUID memberId) {
+        workspaceService.removeMember(principal.getId(), workspaceId, memberId);
+        return ResponseEntity.ok(ApiResponse.success("Member removed from workspace successfully", null));
+    }
+
+    @GetMapping("/{workspaceId}/members/search")
+    @Operation(summary = "Search members in workspace for mention picker")
+    public ResponseEntity<ApiResponse<List<WorkspaceMemberDto>>> searchMembers(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @PathVariable UUID workspaceId,
+            @org.springframework.web.bind.annotation.RequestParam(required = false) String q) {
+        List<WorkspaceMemberDto> members = workspaceService.searchWorkspaceMembers(principal.getId(), workspaceId, q);
+        return ResponseEntity.ok(ApiResponse.success("Workspace members matching query retrieved", members));
+    }
+
+    @DeleteMapping("/invitations/{invitationId}")
+    @Operation(summary = "Cancel a pending workspace invitation")
+    public ResponseEntity<ApiResponse<Void>> cancelInvitation(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @PathVariable UUID invitationId) {
+        workspaceService.cancelInvitation(principal.getId(), invitationId);
+        return ResponseEntity.ok(ApiResponse.success("Invitation cancelled successfully", null));
     }
 }

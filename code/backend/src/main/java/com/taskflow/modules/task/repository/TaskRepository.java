@@ -20,13 +20,15 @@ public interface TaskRepository extends JpaRepository<TaskEntity, UUID> {
     @Query("SELECT t FROM TaskEntity t WHERE t.projectId = :projectId AND t.isDeleted = false " +
            "AND (:status IS NULL OR t.status = :status) " +
            "AND (:priority IS NULL OR t.priority = :priority) " +
+           "AND (:assigneeId IS NULL OR t.assigneeId = :assigneeId) " +
            "AND (:archived IS NULL OR t.isArchived = :archived) " +
-           "AND (:search IS NULL OR LOWER(t.title) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(t.description) LIKE LOWER(CONCAT('%', :search, '%'))) " +
+           "AND (cast(:search as string) IS NULL OR LOWER(t.title) LIKE LOWER(CONCAT('%', cast(:search as string), '%')) OR LOWER(t.description) LIKE LOWER(CONCAT('%', cast(:search as string), '%'))) " +
            "ORDER BY t.position ASC")
     List<TaskEntity> searchTasks(
             @Param("projectId") UUID projectId,
             @Param("status") String status,
             @Param("priority") String priority,
+            @Param("assigneeId") UUID assigneeId,
             @Param("archived") Boolean archived,
             @Param("search") String search);
 
@@ -37,7 +39,7 @@ public interface TaskRepository extends JpaRepository<TaskEntity, UUID> {
            "AND (:projectId IS NULL OR t.projectId = :projectId) " +
            "AND (:status IS NULL OR t.status = :status) " +
            "AND (:priority IS NULL OR t.priority = :priority) " +
-           "AND (:search IS NULL OR LOWER(t.title) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(t.description) LIKE LOWER(CONCAT('%', :search, '%'))) " +
+           "AND (cast(:search as string) IS NULL OR LOWER(t.title) LIKE LOWER(CONCAT('%', cast(:search as string), '%')) OR LOWER(t.description) LIKE LOWER(CONCAT('%', cast(:search as string), '%'))) " +
            "ORDER BY t.createdAt DESC")
     List<TaskEntity> globalSearchTasks(
             @Param("projectId") UUID projectId,

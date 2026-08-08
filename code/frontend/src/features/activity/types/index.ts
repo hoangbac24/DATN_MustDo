@@ -1,6 +1,6 @@
 import type { UserDto } from '@/features/auth/types';
 
-export type ActivityEntityType = 'TASK' | 'PROJECT' | 'WORKSPACE' | 'COMMENT' | 'CHECKLIST' | 'TAG' | 'USER';
+export type ActivityEntityType = 'TASK' | 'PROJECT' | 'WORKSPACE' | 'COMMENT' | 'MEMBER' | 'WIKI' | 'WHITEBOARD';
 
 export interface ActivityLogDto {
   id: string;
@@ -15,20 +15,13 @@ export interface ActivityLogDto {
   createdAt: string;
 }
 
-export interface CreateActivityLogInput {
-  action: string;
-  entityType: ActivityEntityType;
-  entityId: string;
-  details?: string;
-  workspaceId?: string;
-  projectId?: string;
+export interface ActivityFeedFilter {
+  entityType?: string;
+  page?: number;
+  size?: number;
 }
 
-export interface PaginatedActivitiesResponse {
+export interface ActivityGroup {
+  dateLabel: string;
   items: ActivityLogDto[];
-  page: number;
-  size: number;
-  totalElements: number;
-  totalPages: number;
-  last: boolean;
 }

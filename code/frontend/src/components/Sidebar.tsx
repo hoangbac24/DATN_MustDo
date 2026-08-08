@@ -2,33 +2,32 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useTranslation } from 'react-i18next';
 import { 
   CheckSquare, 
   FolderKanban, 
   Calendar, 
   Bell, 
   Settings, 
-  User, 
   Sparkles, 
   LayoutDashboard 
 } from 'lucide-react';
 import { cn } from '@/utils';
 import { useUiStore } from '@/store/uiStore';
 
-const navigationItems = [
-  { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-  { name: 'Tasks', href: '/tasks', icon: CheckSquare },
-  { name: 'Projects', href: '/projects', icon: FolderKanban },
-  { name: 'Calendar', href: '/calendar', icon: Calendar },
-  { name: 'Notifications', href: '/notifications', icon: Bell },
-  { name: 'AI Assistant', href: '/ai', icon: Sparkles },
-  { name: 'Profile', href: '/profile', icon: User },
-  { name: 'Settings', href: '/settings', icon: Settings },
-];
-
 export default function Sidebar() {
   const pathname = usePathname();
   const { sidebarOpen } = useUiStore();
+  const { t } = useTranslation('navigation');
+
+  const navigationItems = [
+    { key: 'dashboard', href: '/dashboard', icon: LayoutDashboard },
+    { key: 'tasks', href: '/tasks', icon: CheckSquare },
+    { key: 'projects', href: '/projects', icon: FolderKanban },
+    { key: 'calendar', href: '/calendar', icon: Calendar },
+    { key: 'notifications', href: '/notifications', icon: Bell },
+    { key: 'settings', href: '/settings', icon: Settings },
+  ];
 
   return (
     <aside
@@ -50,7 +49,7 @@ export default function Sidebar() {
 
           return (
             <Link
-              key={item.name}
+              key={item.key}
               href={item.href as any}
               className={cn(
                 'flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors',
@@ -60,7 +59,7 @@ export default function Sidebar() {
               )}
             >
               <Icon className="h-4 w-4" />
-              {item.name}
+              {t(`menu.${item.key}` as any)}
             </Link>
           );
         })}

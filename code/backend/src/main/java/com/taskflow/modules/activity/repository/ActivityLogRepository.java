@@ -17,5 +17,9 @@ public interface ActivityLogRepository extends JpaRepository<ActivityLogEntity, 
 
     Page<ActivityLogEntity> findByProjectIdAndIsDeletedFalseOrderByCreatedAtDesc(UUID projectId, Pageable pageable);
 
+    Page<ActivityLogEntity> findByProjectIdAndEntityTypeAndIsDeletedFalseOrderByCreatedAtDesc(UUID projectId, String entityType, Pageable pageable);
+
     Page<ActivityLogEntity> findByWorkspaceIdAndIsDeletedFalseOrderByCreatedAtDesc(UUID workspaceId, Pageable pageable);
+
+    Page<ActivityLogEntity> findByWorkspaceIdAndEntityTypeAndIsDeletedFalseOrderByCreatedAtDesc(UUID workspaceId, String entityType, Pageable pageable);
 }

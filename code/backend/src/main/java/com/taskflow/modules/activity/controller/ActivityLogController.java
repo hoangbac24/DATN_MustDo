@@ -52,9 +52,10 @@ public class ActivityLogController {
             @AuthenticationPrincipal UserPrincipal principal,
             @PathVariable UUID projectId,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(required = false) String entityType) {
         Pageable pageable = PageRequest.of(page, Math.min(size, 100), Sort.by(Sort.Direction.DESC, "createdAt"));
-        PageResponse<ActivityLogDto> result = activityLogService.getProjectActivities(principal.getId(), projectId, pageable);
+        PageResponse<ActivityLogDto> result = activityLogService.getProjectActivities(principal.getId(), projectId, entityType, pageable);
         return ResponseEntity.ok(ApiResponse.success("Project activity log retrieved successfully", result));
     }
 
@@ -64,9 +65,10 @@ public class ActivityLogController {
             @AuthenticationPrincipal UserPrincipal principal,
             @PathVariable UUID workspaceId,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(required = false) String entityType) {
         Pageable pageable = PageRequest.of(page, Math.min(size, 100), Sort.by(Sort.Direction.DESC, "createdAt"));
-        PageResponse<ActivityLogDto> result = activityLogService.getWorkspaceActivities(principal.getId(), workspaceId, pageable);
+        PageResponse<ActivityLogDto> result = activityLogService.getWorkspaceActivities(principal.getId(), workspaceId, entityType, pageable);
         return ResponseEntity.ok(ApiResponse.success("Workspace activity log retrieved successfully", result));
     }
 

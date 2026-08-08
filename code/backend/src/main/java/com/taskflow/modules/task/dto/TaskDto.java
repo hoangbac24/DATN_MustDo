@@ -11,10 +11,14 @@ public class TaskDto {
     private String description;
     private String status;
     private String priority;
+    private Instant startDate;
     private Instant dueDate;
+    private Long durationDays;
+    private java.util.List<TaskDependencyDto> dependencies;
     private UUID projectId;
     private UUID assigneeId;
     private UserDto assignee;
+    private UUID columnId;
     private Double position;
     private Boolean isArchived;
     private Instant createdAt;
@@ -111,6 +115,14 @@ public class TaskDto {
         this.assignee = assignee;
     }
 
+    public UUID getColumnId() {
+        return columnId;
+    }
+
+    public void setColumnId(UUID columnId) {
+        this.columnId = columnId;
+    }
+
     public Double getPosition() {
         return position;
     }
@@ -133,6 +145,30 @@ public class TaskDto {
 
     public void setCreatedAt(Instant createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public Instant getStartDate() {
+        return startDate;
+    }
+
+    public void setStartDate(Instant startDate) {
+        this.startDate = startDate;
+    }
+
+    public Long getDurationDays() {
+        return durationDays;
+    }
+
+    public void setDurationDays(Long durationDays) {
+        this.durationDays = durationDays;
+    }
+
+    public java.util.List<TaskDependencyDto> getDependencies() {
+        return dependencies;
+    }
+
+    public void setDependencies(java.util.List<TaskDependencyDto> dependencies) {
+        this.dependencies = dependencies;
     }
 
     public Instant getUpdatedAt() {

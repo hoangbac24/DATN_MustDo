@@ -2,6 +2,8 @@
 
 import React, { useState } from 'react';
 import { Bold, Italic, Code, AtSign, Send } from 'lucide-react';
+import { useWorkspaceStore } from '@/store/workspace-store';
+import { useSearchWorkspaceMembers } from '@/features/workspace/hooks/use-workspace';
 
 interface CommentFormProps {
   onSubmit: (content: string) => void;
@@ -37,8 +39,36 @@ export function CommentForm({
     setContent((prev) => `${prev}${prefix}${suffix}`);
   };
 
+  const activeWorkspaceId = useWorkspaceStore((state) => state.activeWorkspaceId);
+  const [mentionQuery, setMentionQuery] = useState<string | null>(null);
+  const { data: members = [] } = useSearchWorkspaceMembers(activeWorkspaceId, mentionQuery || '');
+
+  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const val = e.target.value;
+    setContent(val);
+
+    const cursorPos = e.target.selectionStart;
+    const textBeforeCursor = val.substring(0, cursorPos);
+    const lastAtIndex = textBeforeCursor.lastIndexOf('@');
+
+    if (lastAtIndex !== -1 && !textBeforeCursor.substring(lastAtIndex).includes(' ')) {
+      const q = textBeforeCursor.substring(lastAtIndex + 1);
+      setMentionQuery(q);
+    } else {
+      setMentionQuery(null);
+    }
+  };
+
+  const selectMention = (member: any) => {
+    const name = member.fullName || member.email;
+    const lastAtIndex = content.lastIndexOf('@');
+    const newText = content.substring(0, lastAtIndex) + `@${name} `;
+    setContent(newText);
+    setMentionQuery(null);
+  };
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-2 rounded-xl border border-white/10 bg-gray-950/60 p-3">
+    <form onSubmit={handleSubmit} className="relative space-y-2 rounded-xl border border-white/10 bg-gray-950/60 p-3">
       {/* Formatting Toolbar */}
       <div className="flex items-center justify-between border-b border-white/10 pb-2 text-gray-400">
         <div className="flex items-center space-x-1">
@@ -79,11 +109,30 @@ export function CommentForm({
         <span className="text-[10px] text-gray-500">{content.length}/5000</span>
       </div>
 
+      {/* Autocomplete Dropdown Menu */}
+      {mentionQuery !== null && members.length > 0 && (
+        <div className="absolute left-3 bottom-14 z-50 max-h-40 w-64 overflow-y-auto rounded-xl border border-indigo-500/30 bg-gray-900 p-1 shadow-2xl backdrop-blur-md space-y-0.5">
+          {members.map((m) => (
+            <button
+              key={m.userId}
+              type="button"
+              onClick={() => selectMention(m)}
+              className="flex w-full items-center space-x-2 rounded-lg p-1.5 text-left text-xs hover:bg-indigo-600/30 transition"
+            >
+              <div className="flex h-5 w-5 items-center justify-center rounded-full bg-indigo-600 text-[10px] font-bold text-white shrink-0">
+                {(m.fullName || m.email)?.substring(0, 1).toUpperCase()}
+              </div>
+              <span className="truncate text-white font-medium">{m.fullName || m.email}</span>
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* Textarea Input */}
       <textarea
         rows={3}
         value={content}
-        onChange={(e) => setContent(e.target.value)}
+        onChange={handleChange}
         placeholder={placeholder}
         disabled={isLoading}
         className="w-full resize-none bg-transparent text-xs text-white placeholder-gray-500 focus:outline-none disabled:opacity-50"

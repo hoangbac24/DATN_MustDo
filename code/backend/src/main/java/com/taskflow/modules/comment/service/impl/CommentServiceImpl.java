@@ -32,22 +32,25 @@ public class CommentServiceImpl implements CommentService {
     private final TaskService taskService;
     private final UserService userService;
     private final CommentMapper commentMapper;
+    private final com.taskflow.modules.notification.service.NotificationService notificationService;
 
     public CommentServiceImpl(
             CommentRepository commentRepository,
             TaskService taskService,
             UserService userService,
-            CommentMapper commentMapper) {
+            CommentMapper commentMapper,
+            com.taskflow.modules.notification.service.NotificationService notificationService) {
         this.commentRepository = commentRepository;
         this.taskService = taskService;
         this.userService = userService;
         this.commentMapper = commentMapper;
+        this.notificationService = notificationService;
     }
 
     @Override
     @Transactional
     public CommentDto createComment(UUID userId, UUID taskId, CreateCommentRequest request) {
-        taskService.getTaskDetails(userId, taskId);
+        com.taskflow.modules.task.dto.TaskDto task = taskService.getTaskDetails(userId, taskId);
 
         List<UUID> mentions = extractAndMergeMentions(request.getContent(), request.getMentionedUserIds());
         String mentionsStr = MentionUtils.serializeMentionedUserIds(mentions);
@@ -61,6 +64,25 @@ public class CommentServiceImpl implements CommentService {
 
         CommentEntity saved = commentRepository.save(entity);
         UserDto author = resolveAuthor(saved.getUserId());
+
+        if (!mentions.isEmpty() && notificationService != null) {
+            String authorName = author != null && author.getFullName() != null ? author.getFullName() : "Someone";
+            for (UUID mentionedUserId : mentions) {
+                if (!mentionedUserId.equals(userId)) {
+                    try {
+                        notificationService.createNotification(new com.taskflow.modules.notification.dto.CreateNotificationRequest(
+                                "You were mentioned in a comment",
+                                authorName + " mentioned you in a comment on task: " + task.getTitle(),
+                                mentionedUserId,
+                                "MENTION",
+                                "/projects/" + task.getProjectId()
+                        ));
+                    } catch (Exception ignored) {
+                    }
+                }
+            }
+        }
+
         return commentMapper.toDto(saved, author);
     }
 

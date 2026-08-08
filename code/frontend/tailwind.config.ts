@@ -11,23 +11,37 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        background: 'var(--background)',
-        foreground: 'var(--foreground)',
-        primary: {
-          DEFAULT: '#6366f1',
-          foreground: '#ffffff',
-        },
-        secondary: {
-          DEFAULT: '#8b5cf6',
-          foreground: '#ffffff',
-        },
+        background: 'var(--bg-app)',
+        foreground: 'var(--text-primary)',
         surface: {
-          DEFAULT: 'rgba(17, 24, 39, 0.7)',
-          border: 'rgba(255, 255, 255, 0.1)',
+          DEFAULT: 'var(--bg-surface)',
+          alt: 'var(--bg-surface-alt)',
+          sidebar: 'var(--bg-sidebar)',
+          border: 'var(--border-color)',
+        },
+        text: {
+          primary: 'var(--text-primary)',
+          secondary: 'var(--text-secondary)',
+          muted: 'var(--text-muted)',
+        },
+        menu: {
+          active: 'var(--active-menu)',
+          activeText: 'var(--active-menu-text)',
+        },
+        primary: {
+          DEFAULT: 'var(--color-primary)',
+          hover: 'var(--color-primary-hover)',
+          foreground: '#ffffff',
+        },
+        status: {
+          success: 'var(--color-success)',
+          warning: 'var(--color-warning)',
+          error: 'var(--color-error)',
+          info: 'var(--color-info)',
         },
       },
-      backdropBlur: {
-        glass: '12px',
+      borderColor: {
+        DEFAULT: 'var(--border-color)',
       },
     },
   },

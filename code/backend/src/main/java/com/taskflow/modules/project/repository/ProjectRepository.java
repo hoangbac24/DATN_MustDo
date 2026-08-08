@@ -21,7 +21,7 @@ public interface ProjectRepository extends JpaRepository<ProjectEntity, UUID> {
 
     @org.springframework.data.jpa.repository.Query("SELECT p FROM ProjectEntity p WHERE p.isDeleted = false " +
            "AND (:workspaceId IS NULL OR p.workspaceId = :workspaceId) " +
-           "AND (LOWER(p.name) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(p.description) LIKE LOWER(CONCAT('%', :search, '%')))")
+           "AND (cast(:search as string) IS NULL OR LOWER(p.name) LIKE LOWER(CONCAT('%', cast(:search as string), '%')) OR LOWER(p.description) LIKE LOWER(CONCAT('%', cast(:search as string), '%')))")
     List<ProjectEntity> searchProjects(
             @org.springframework.data.repository.query.Param("workspaceId") UUID workspaceId,
             @org.springframework.data.repository.query.Param("search") String search);

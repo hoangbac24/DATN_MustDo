@@ -85,3 +85,61 @@ export function useWorkspaceMembers(workspaceId: string | null) {
     enabled: !!workspaceId,
   });
 }
+
+export function usePendingInvitations(workspaceId: string | null) {
+  return useQuery({
+    queryKey: ['workspace-invitations', workspaceId],
+    queryFn: () => workspaceService.getPendingInvitations(workspaceId!),
+    enabled: !!workspaceId,
+  });
+}
+
+export function useInviteMember(workspaceId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ email, role }: { email: string; role?: string }) =>
+      workspaceService.inviteMember(workspaceId, email, role),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['workspace-invitations', workspaceId] });
+    },
+  });
+}
+
+export function useCancelInvitation(workspaceId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (invitationId: string) => workspaceService.cancelInvitation(invitationId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['workspace-invitations', workspaceId] });
+    },
+  });
+}
+
+export function useGetInvitation(token: string | null) {
+  return useQuery({
+    queryKey: ['invitation', token],
+    queryFn: () => workspaceService.getInvitationByToken(token!),
+    enabled: !!token,
+  });
+}
+
+export function useAcceptInvitation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (token: string) => workspaceService.acceptInvitation(token),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: WORKSPACE_QUERY_KEYS.list });
+    },
+  });
+}
+
+export function useSearchWorkspaceMembers(workspaceId: string | null, query?: string) {
+  return useQuery({
+    queryKey: ['workspace-members-search', workspaceId, query],
+    queryFn: () => workspaceService.searchMembers(workspaceId!, query),
+    enabled: !!workspaceId,
+  });
+}

@@ -38,3 +38,14 @@ export interface UpdateWorkspaceInput {
   iconUrl?: string;
   themeColor?: string;
 }
+
+export interface WorkspaceInvitationDto {
+  id: string;
+  workspaceId: string;
+  email: string;
+  role: string;
+  token: string;
+  status: string;
+  expiresAt: string;
+  createdAt: string;
+}
